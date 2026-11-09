@@ -233,8 +233,8 @@ fn compute_label() -> (String, usize, String, String) {
     // let sign = if waxing { "▲" } else { "▼" };
     // let sign = if waxing { "🔼" } else { "🔽" };
     // let sign = if waxing { "↑" } else { "↓" };
-    // let sign = if waxing { "↗" } else { "↘" };
-    let next_state = if waxing { "Full Moon" } else { "New Moon" };
+    let sign = if waxing { "↗" } else { "↘" };
+    let next_state = if waxing { "Next Full Moon" } else { "Next New Moon" };
 
     // 4. Compute fractional days until the upcoming target extreme
     // Use exact Julian dates from MoonCalendar
@@ -264,9 +264,22 @@ fn compute_label() -> (String, usize, String, String) {
     // 5. Format layout smoothly using the library's official matching emoji
     // let label = format!("{} {:.3}% ({} to {})", sign, pct, time_remaining_str,next_state);
     // let label = format!("{} {:.3}% {} {}", sign, pct,next_state , time_remaining_str);
+
+    let current_phase = if pct <= 1.0 {
+        "Current Moon Phase: === NEW MOON ===\n".to_string()
+    } else if pct >= 99.0 {
+        "Current Moon Phase: === FULL MOON ===\n".to_string()
+    } else if pct >= 49.0 && pct <= 51.0 && waxing {
+        "Current Moon Phase: === FIRST QUARTER ===\n".to_string()
+    } else if pct >= 49.0 && pct <= 51.0 && !waxing {
+        "Current Moon Phase: === LAST QUARTER ===\n".to_string()
+    } else {
+        "".to_string()
+    };
+
     let label = format!(
-        "{} {}.\nThe moon is {:.3}% illuminated",
-        next_state, time_remaining_str, pct
+        "{}{} {}.\nMoon size is {:.3}% and {}", current_phase ,
+        next_state, time_remaining_str, pct, if waxing { "getting bigger".to_string() } else { "getting smaller".to_string() }
     );
 
     // The human-readable phase name from moontool's Display impl
