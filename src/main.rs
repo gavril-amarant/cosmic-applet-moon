@@ -233,7 +233,7 @@ fn compute_label() -> (String, usize, String, String) {
     // let sign = if waxing { "▲" } else { "▼" };
     // let sign = if waxing { "🔼" } else { "🔽" };
     // let sign = if waxing { "↑" } else { "↓" };
-    let sign = if waxing { "↗" } else { "↘" };
+    // let sign = if waxing { "↗" } else { "↘" };
     let next_state = if waxing { "Next Full Moon" } else { "Next New Moon" };
 
     // 4. Compute fractional days until the upcoming target extreme
