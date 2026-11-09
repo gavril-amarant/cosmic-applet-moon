@@ -278,7 +278,7 @@ fn compute_label() -> (String, usize, String, String) {
     };
 
     let label = format!(
-        "{}{} {}.\nMoon size is {:.3}% and {}", current_phase ,
+        "{}{} {}.\nMoon size now is {:.3}% and {}", current_phase ,
         next_state, time_remaining_str, pct, if waxing { "getting bigger".to_string() } else { "getting smaller".to_string() }
     );
 
