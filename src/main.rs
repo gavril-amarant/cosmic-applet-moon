@@ -148,8 +148,6 @@ impl cosmic::Application for MoonApplet {
         Task::none()
     }
 
-    
-
     fn view(&self) -> Element<'_, Self::Message> {
         let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
             cosmic::widget::image(self.icon.clone())
@@ -234,7 +232,11 @@ fn compute_label() -> (String, usize, String, String) {
     // let sign = if waxing { "🔼" } else { "🔽" };
     // let sign = if waxing { "↑" } else { "↓" };
     // let sign = if waxing { "↗" } else { "↘" };
-    let next_state = if waxing { "Next Full Moon" } else { "Next New Moon" };
+    let next_state = if waxing {
+        "Next Full Moon"
+    } else {
+        "Next New Moon"
+    };
 
     // 4. Compute fractional days until the upcoming target extreme
     // Use exact Julian dates from MoonCalendar
@@ -278,8 +280,16 @@ fn compute_label() -> (String, usize, String, String) {
     };
 
     let label = format!(
-        "{}{} {}.\nMoon size now is {:.3}% and {}", current_phase ,
-        next_state, time_remaining_str, pct, if waxing { "getting bigger".to_string() } else { "getting smaller".to_string() }
+        "{}{} {}.\nMoon size now is {:.3}% and {}",
+        current_phase,
+        next_state,
+        time_remaining_str,
+        pct,
+        if waxing {
+            "getting bigger".to_string()
+        } else {
+            "getting smaller".to_string()
+        }
     );
 
     // The human-readable phase name from moontool's Display impl
