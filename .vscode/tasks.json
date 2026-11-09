@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "Deploy Applet to COSMIC Panel",
+      "command": "cargo build --release && install -D target/release/cosmic-applet-moon ~/.local/bin/cosmic-applet-moon && pkill -f cosmic-panel",
+      "options": {
+        "env": {
+          "PATH": "/home/dionis/.cargo/bin:${env:PATH}"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$rustc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Test Applet Output Natively",
+      "command": "cargo test -- --nocapture test_output",
+      "options": {
+        "env": {
+          "PATH": "/home/dionis/.cargo/bin:${env:PATH}"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Refactor source code",
+      "command": "cargo fmt && cargo clippy --fix --allow-dirty",
+      "options": {
+        "env": {
+          "PATH": "/home/dionis/.cargo/bin:${env:PATH}"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      }
+    }
+  ]
+}

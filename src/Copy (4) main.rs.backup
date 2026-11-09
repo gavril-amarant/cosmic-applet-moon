@@ -1,0 +1,342 @@
+use std::time::Duration;
+
+use chrono::{Datelike, Timelike, Utc};
+use cosmic::app::Core;
+// use cosmic::iced::widget::{button, text, container};
+// use cosmic::iced::{Alignment, Length};
+use cosmic::iced::widget::{button, text};
+use cosmic::{Action, Element, Task};
+use moontool::moon::{ForDateTime, MoonCalendar, MoonPhase};
+use moontool::moon::ToJSON;
+use cosmic::iced::{
+    platform_specific::shell::commands::popup::{destroy_popup, get_popup},
+    window::Id,
+    Limits,
+};
+
+const APP_ID: &str = "com.example.CosmicAppletMoon";
+
+
+#[derive(Debug, Clone)]
+pub enum Msg {
+    Tick,
+    TogglePopup,
+    PopupClosed(Id),
+}
+
+macro_rules! moon_icons {
+    ($day:expr, $($n:expr => $file:expr),*) => {
+        match $day {
+            $($n => cosmic::iced::widget::image::Handle::from_bytes(
+                include_bytes!($file).to_vec()
+            ),)*
+            _ => cosmic::iced::widget::image::Handle::from_bytes(
+                include_bytes!("../assets/icons/moon-1-NM.png").to_vec()
+            ),
+        }
+    };
+}
+
+fn get_moon_phase_image(day: usize) -> cosmic::iced::widget::image::Handle {
+    moon_icons!(day,
+        1 => "../assets/icons/moon-1-NM.png",
+        2 => "../assets/icons/moon-2.png",
+        3 => "../assets/icons/moon-3.png",
+        4 => "../assets/icons/moon-4.png",
+        5 => "../assets/icons/moon-5.png",
+        6 => "../assets/icons/moon-6.png",
+        7 => "../assets/icons/moon-7.png",
+        8 => "../assets/icons/moon-8-FQ.png",
+        9 => "../assets/icons/moon-9.png",
+        10 => "../assets/icons/moon-10.png",
+        11 => "../assets/icons/moon-11.png",
+        12 => "../assets/icons/moon-12.png",
+        13 => "../assets/icons/moon-13.png",
+        14 => "../assets/icons/moon-14.png",
+        15 => "../assets/icons/moon-15-FM.png",
+        16 => "../assets/icons/moon-16.png",
+        17 => "../assets/icons/moon-17.png",
+        18 => "../assets/icons/moon-18.png",
+        19 => "../assets/icons/moon-19.png",
+        20 => "../assets/icons/moon-20.png",
+        21 => "../assets/icons/moon-21.png",
+        22 => "../assets/icons/moon-22-LQ.png",
+        23 => "../assets/icons/moon-23.png",
+        24 => "../assets/icons/moon-24.png",
+        25 => "../assets/icons/moon-25.png",
+        26 => "../assets/icons/moon-26.png",
+        27 => "../assets/icons/moon-27.png",
+        28 => "../assets/icons/moon-28.png",
+        29 => "../assets/icons/moon-29.png"
+    )
+}
+
+// In your struct, store the handle:
+pub struct MoonApplet {
+    core: Core,
+    popup: Option<Id>,
+    label: String,
+    icon: cosmic::iced::widget::image::Handle,
+    phase_name: String,
+    phase_calendar_text: String,
+}
+
+impl cosmic::Application for MoonApplet {
+    type Executor = cosmic::executor::Default;
+    type Flags = ();
+    type Message = Msg;
+
+    const APP_ID: &'static str = APP_ID;
+
+    fn core(&self) -> &Core {
+        &self.core
+    }
+
+    fn core_mut(&mut self) -> &mut Core {
+        &mut self.core
+    }
+
+
+    fn init(core: Core, _flags: Self::Flags) -> (Self, Task<Action<Msg>>) {
+        let (label, day, phase_name, phase_calendar_text) = compute_label();
+        let icon = get_moon_phase_image(day);
+        (Self { core, popup: None, label, icon, phase_name, phase_calendar_text }, Task::none())
+    }
+
+    fn update(&mut self, msg: Self::Message) -> Task<Action<Msg>> {
+        match msg {
+            Msg::Tick => {
+                let (label, day, phase_name, phase_calendar_text) = compute_label();
+                self.label = label;
+                self.icon = get_moon_phase_image(day);
+                self.phase_name = phase_name;
+                self.phase_calendar_text = phase_calendar_text;
+            }
+            Msg::TogglePopup => {
+                if let Some(p) = self.popup.take() {
+                    return destroy_popup(p);
+                } else {
+                    let new_id = Id::unique();
+                    self.popup.replace(new_id);
+                    let mut popup_settings = self.core.applet.get_popup_settings(
+                        self.core.main_window_id().unwrap(),
+                        new_id,
+                        Some((420, 400)),
+                        None,
+                        None,
+                    );
+                    popup_settings.positioner.size_limits = Limits::NONE
+                        .min_width(200.0)
+                        .min_height(80.0)
+                        .max_width(600.0)
+                        .max_height(500.0);
+                    return get_popup(popup_settings);
+                }
+            }   
+            Msg::PopupClosed(id) => {
+                if self.popup == Some(id) {
+                    self.popup = None;
+                }
+            }
+        }
+        Task::none()
+    }           
+
+//     fn view(&self) -> Element<'_, Self::Message> {
+//         let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
+//             cosmic::widget::image(self.icon.clone()).width(24).height(24),
+//             cosmic::iced::widget::text(&self.label).size(13.0),
+//         ]
+//         .spacing(6)
+//         .align_y(cosmic::iced::Alignment::Center)
+//         .into();
+
+//     let bg: cosmic::Element<'_, Msg> = cosmic::iced::widget::container(row)
+//         .style(|_t: &cosmic::Theme| cosmic::iced::widget::container::Style {
+//             background: Some(cosmic::iced::Background::Color(
+//                 cosmic::iced::Color::from_rgb8(20, 20, 20), // near-black
+//             )),
+//             text_color: Some(cosmic::iced::Color::WHITE),
+//             ..Default::default()
+//         })
+//         .padding([2.0, 6.0])
+//         .into();
+
+//         self.core
+//             .applet
+//             .autosize_window(bg)
+//             .into()
+//     }   
+
+
+    // fn view(&self) -> Element<'_, Self::Message> {
+    //     let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
+    //         cosmic::widget::image(self.icon.clone()).width(24).height(24),
+    //         cosmic::iced::widget::text(&self.label).size(13.0),
+    //     ]
+    //     .spacing(6)
+    //     .align_y(cosmic::iced::Alignment::Center)
+    //     .into();
+
+    //     let bg: cosmic::Element<'_, Msg> = cosmic::iced::widget::container(row)
+    //         .style(|_t: &cosmic::Theme| cosmic::iced::widget::container::Style {
+    //             background: Some(cosmic::iced::Background::Color(
+    //                 cosmic::iced::Color::from_rgb8(20, 20, 20), // near-black
+    //             )),
+    //             text_color: Some(cosmic::iced::Color::WHITE),
+    //             ..Default::default()
+    //         })
+    //         .padding([2.0, 6.0])
+    //         .into();
+
+
+    //     self.core
+    //         .applet
+    //         .autosize_window(
+    //             cosmic::iced::widget::button(bg)
+    //                 .on_press(Msg::TogglePopup),
+    //         )
+    //         .into()
+    // }     
+
+    fn view(&self) -> Element<'_, Self::Message> {
+        let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
+            cosmic::widget::image(self.icon.clone()).width(24).height(24),
+            // cosmic::iced::widget::text(&self.label).size(13.0),
+        ]
+        .spacing(6)
+        .align_y(cosmic::iced::Alignment::Center)
+        .into();
+
+        self.core
+            .applet
+            .autosize_window(
+                cosmic::widget::button::custom(row)
+                    .class(cosmic::theme::Button::AppletIcon)
+                    .on_press(Msg::TogglePopup),
+            )
+            .into()
+    }
+
+    fn view_window(&self, id: Id) -> Element<'_, Self::Message> {
+
+        if Some(id) == self.popup {
+            let content = cosmic::iced::widget::column![
+                cosmic::iced::widget::text(&self.label).size(14.0),
+                cosmic::iced::widget::rule::horizontal(2),
+                cosmic::iced::widget::text(&self.phase_calendar_text).size(9.0),
+                cosmic::iced::widget::rule::horizontal(2),
+                cosmic::iced::widget::text(&self.phase_name).size(11.0),
+            ]
+            .spacing(4)
+            .padding(8);
+
+            self.core
+                .applet
+                .popup_container(content)
+                .max_width(580.0)
+                .into()
+        } else {
+            cosmic::iced::widget::text("").into()
+        }
+    }   
+    fn subscription(&self) -> cosmic::iced::Subscription<Self::Message> {
+        cosmic::iced::time::every(Duration::from_secs(1440)).map(|_| Msg::Tick)
+    }
+}
+
+fn compute_label() -> (String, usize, String, String) {
+    let phase: MoonPhase = ForDateTime::now();
+    let phase_calendar: MoonCalendar = ForDateTime::now();
+    
+
+    let json_text = phase.to_json();
+    let cal_json = phase_calendar.to_json();
+
+    let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
+        Ok(v) => v,
+        Err(_) => return ("🌑 Err".to_string(),1,"🌑 Err".to_string(),"🌑 Err".to_string()),
+    };
+    let cal_parsed: serde_json::Value = serde_json::from_str(&cal_json).unwrap_or_default();
+
+    // 1. Extract numeric metrics from the root level
+    let fraction_illuminated = parsed["fraction_illuminated"].as_f64().unwrap_or(0.0);
+    let fraction_of_lunation = parsed["fraction_of_lunation"].as_f64().unwrap_or(0.0);
+    let current_age = parsed["age"].as_f64().unwrap_or(0.0);
+
+    // 2. Core Fix: Extract the native emoji string from the nested "phase" object
+    let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
+
+    let pct = fraction_illuminated * 100.0;
+    
+    // 3. Determine if the trajectory is Waxing (+) or Waning (-)
+    let waxing = fraction_of_lunation < 0.5;
+    // let sign = if waxing { "+" } else { "-" };
+    // let sign = if waxing { "▲" } else { "▼" };
+    // let sign = if waxing { "🔼" } else { "🔽" };
+    // let sign = if waxing { "↑" } else { "↓" };
+    let sign = if waxing { "↗" } else { "↘" };
+    let next_state = if waxing { "Full Moon" } else { "New Moon" };
+
+    // 4. Compute fractional days until the upcoming target extreme
+    // Use exact Julian dates from MoonCalendar
+    let current_jd = cal_parsed["julian_date"].as_f64().unwrap_or(0.0);
+    let days_remaining = if waxing {
+        cal_parsed["full_moon"].as_f64().unwrap_or(0.0) - current_jd
+    } else {
+        cal_parsed["next_new_moon"].as_f64().unwrap_or(0.0) - current_jd
+    };
+
+    let total_minutes = (days_remaining * 24.0 * 60.0).round() as i64;
+    let d = total_minutes / (24 * 60);
+    let h = (total_minutes / 60) % 24;
+    let m = total_minutes % 60;
+
+    let time_remaining_str = if d > 0 {
+        format!("in {}d {}h {}m", d, h, m)
+    } else if h > 0 {
+        format!("in {}h {}m", h, m)
+    } else if m > 0 {
+        format!("in {} minutes", m)
+    } else {
+        format!("now!")
+    };    
+
+    let day = (current_age.round() as usize).clamp(1, 29);
+    // 5. Format layout smoothly using the library's official matching emoji
+    // let label = format!("{} {:.3}% ({} to {})", sign, pct, time_remaining_str,next_state);
+    // let label = format!("{} {:.3}% {} {}", sign, pct,next_state , time_remaining_str);
+    let label = format!("{} {}.\nThe moon is {:.3}% illuminated",next_state , time_remaining_str, pct);
+
+    // The human-readable phase name from moontool's Display impl
+    let phase_text = format!("{}", phase);
+    let phase_calendar_text = format!("{}", phase_calendar);
+
+    let clean: String = phase_calendar_text.chars().filter(|c| c.is_alphanumeric() || *c == ' '|| *c == '\n'|| *c == '\t').collect();   
+
+    (label, day, phase_text, clean)
+}
+
+
+fn main() -> cosmic::iced::Result {
+    cosmic::applet::run::<MoonApplet>(())
+}   
+#[cfg(test)]
+mod tests {
+    use moontool::moon::{ForDateTime, ToJSON};
+
+    use super::*;
+
+    #[test]
+    fn test_output() {
+        // let phase = MoonPhase::now();
+        // //let json = phase.to_json();
+        // println!("\n=== PHASE {} ===", phase);
+        println!("\n=== APPLET TEST OUTPUT ===");
+        println!("\nLabel: {}", compute_label().0);
+        println!("==========================\n");
+        println!("Phase: {}", compute_label().2);
+        println!("\n==========================\n");
+        println!("Calendar: {}", compute_label().3);
+    }
+}

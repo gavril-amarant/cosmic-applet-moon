@@ -1,0 +1,354 @@
+use std::time::Duration;
+
+use chrono::{Datelike, Timelike, Utc};
+use cosmic::app::Core;
+// use cosmic::iced::widget::{button, text, container};
+// use cosmic::iced::{Alignment, Length};
+use cosmic::iced::widget::{button, text};
+use cosmic::{Action, Element, Task};
+use moontool::moon::{ForDateTime, MoonPhase};
+use moontool::moon::ToJSON;
+
+const APP_ID: &str = "com.example.CosmicAppletMoon";
+
+
+#[derive(Debug, Clone)]
+pub enum Msg {
+    Tick,
+}
+
+pub struct MoonApplet {
+    core: Core,
+    label: String,
+}
+
+
+ 
+
+
+impl cosmic::Application for MoonApplet {
+    type Executor = cosmic::executor::Default;
+    type Flags = ();
+    type Message = Msg;
+
+    const APP_ID: &'static str = APP_ID;
+
+    fn core(&self) -> &Core {
+        &self.core
+    }
+
+    fn core_mut(&mut self) -> &mut Core {
+        &mut self.core
+    }
+
+    fn init(core: Core, _flags: Self::Flags) -> (Self, Task<Action<Msg>>) {
+        let label = compute_label();
+        (Self { core, label }, Task::none())
+    }
+
+    fn update(&mut self, _msg: Self::Message) -> Task<Action<Msg>> {
+        self.label = compute_label();
+        Task::none()
+    }
+    // fn view(&self) -> Element<'_, Self::Message> {
+    //     button(text(&self.label).size(6.0))
+    //         .width(cosmic::iced::Length::Fixed(170.0))
+    //         .padding(cosmic::iced::Padding::ZERO)
+    //         .on_press(Msg::Tick)
+    //         .into()
+    // }    
+
+    fn view(&self) -> Element<'_, Self::Message> {
+        self.core
+            .applet
+            .autosize_window(
+                self.core
+                    .applet
+                    .text_button(text(&self.label).size(12), Msg::Tick),
+            )
+            .into()
+    }     
+     
+    fn subscription(&self) -> cosmic::iced::Subscription<Self::Message> {
+        cosmic::iced::time::every(Duration::from_secs(60)).map(|_| Msg::Tick)
+    }
+}
+
+
+// fn compute_label() -> String {
+//     // 1. Calculate the high-precision fractional Julian Date using your working function
+//     let jd = julian_date(&chrono::Utc::now());
+    
+//     // 2. Known absolute reference New Moon epoch: January 6, 2000 (JD 2451549.5)
+//     let known_new_moon = 2451549.5;
+//     let delta_days = jd - known_new_moon;
+    
+//     // 3. Exact standard length of a Synodic Lunar Month
+//     let lunar_cycle = 29.530588853;
+    
+//     // 4. Pin the exact age position within the current synodic loop safely
+//     let mut moon_age = delta_days % lunar_cycle;
+//     if moon_age < 0.0 {
+//         moon_age += lunar_cycle;
+//     }
+
+//     // 5. Calculate physical illumination percentage (0% to 100%)
+//     let illumination = if moon_age <= lunar_cycle / 2.0 {
+//         (moon_age / (lunar_cycle / 2.0)) * 100.0
+//     } else {
+//         ((lunar_cycle - moon_age) / (lunar_cycle / 2.0)) * 100.0
+//     };
+
+//     // 6. Determine if the phase is Waxing (+) or Waning (-)
+//     let waxing = moon_age <= lunar_cycle / 2.0;
+//     let sign = if waxing { "+" } else { "-" };
+
+//     // 7. Calculate exact fractional days left until the next extreme (Full vs New)
+//     let days_to = if waxing {
+//         (lunar_cycle / 2.0) - moon_age // Remaining days until Full Moon
+//     } else {
+//         lunar_cycle - moon_age         // Remaining days until New Moon
+//     };
+
+//     // 8. Assign the matching visual emoji glyph for status bar context
+//     let icon = if illumination < 1.5 {
+//         "🌑"
+//     } else if illumination > 98.5 {
+//         "🌕"
+//     } else {
+//         "🌙"
+//     };
+
+//     // 9. Build your precise tracking dashboard indicator string
+//     format!("{} {:.0}%{} ({:.0}d)", icon, illumination, sign, days_to.round())
+// }
+
+// fn compute_label() -> String {
+//     use std::process::Command;
+
+//     // 1. Get current time formatted as ISO 8601 string (e.g. 2026-11-08T14:21:00)
+//     let now_str = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+
+//     // 2. Call the compiled binary package directly requesting clean JSON data
+//     let output = Command::new("moontool")
+//         .args(["--json", &now_str])
+//         .output();
+
+//     // 3. Fallback handle if the system binary path target fails to read
+//     let json_text = match output {
+//         Ok(out) if out.status.success() => String::from_utf8_lossy(&out.stdout).into_owned(),
+//         _ => return "🌑 Error".to_string(),
+//     };
+
+//     // 4. Parse the specific variables out of the returned JSON footprint
+//     let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
+//         Ok(v) => v,
+//         Err(_) => return "🌑 Parse Err".to_string(),
+//     };
+
+//     // 5. Safely pull out illumination percentage and lunation age positions
+//     let illumination_fraction = parsed["phase"]["fraction_illuminated"].as_f64().unwrap_or(0.0);
+//     let fraction_of_lunation = parsed["phase"]["fraction_of_lunation"].as_f64().unwrap_or(0.0);
+//     let next_new_moon_jd = parsed["calendar"]["next_new_moon"].as_f64().unwrap_or(0.0);
+//     let current_jd = parsed["phase"]["julian_date"].as_f64().unwrap_or(0.0);
+
+//     let pct = illumination_fraction * 100.0;
+    
+//     // 6. Check direction: fraction_of_lunation < 0.5 means waxing (+), otherwise waning (-)
+//     let waxing = fraction_of_lunation < 0.5;
+//     let sign = if waxing { "+" } else { "-" };
+
+//     // 7. Calculate exact remaining days left until the upcoming new moon cycle extreme
+//     let days_to_new_moon = next_new_moon_jd - current_jd;
+
+//     // 8. Select matching icon context parameters
+//     let icon = if pct < 1.5 { "🌑" } else { "🌙" };
+
+//     format!("{} {:.0}%{} ({:.0}d)", icon, pct, sign, days_to_new_moon.round())
+// }
+
+// fn compute_label() -> String {
+//     let now = chrono::Utc::now();
+//     let year = now.year();
+//     let month = now.month() as i32;
+//     let day = now.day() as i32;
+    
+//     // Add fractional time-of-day parsing for maximum precision
+//     let hour = now.hour() as f64;
+//     let minute = now.minute() as f64;
+//     let second = now.second() as f64;
+//     let fractional_day = day as f64 + (hour / 24.0) + (minute / 1440.0) + (second / 86400.0);
+
+//     let (y, m) = if month <= 2 {
+//         (year - 1, month + 12)
+//     } else {
+//         (year, month)
+//     };
+
+//     let a = y / 100;
+//     let b = a / 4;
+//     let c = 2 - a + b;
+//     let e = (365.25 * (y + 4716) as f64) as i32;
+//     let f = (30.6001 * (m + 1) as f64) as i32;
+    
+//     // Exact Julian Date down to the second
+//     let jd = c as f64 + fractional_day + e as f64 + f as f64 - 1524.5;
+
+//     // Anchor New Moon point: January 6, 2000 (JD 2451549.5)
+//     let known_new_moon = 2451549.5;
+//     let total_days = jd - known_new_moon;
+//     let lunar_cycle = 29.530588853;
+    
+//     let mut moon_age = total_days % lunar_cycle;
+//     if moon_age < 0.0 {
+//         moon_age += lunar_cycle;
+//     }
+
+//     // Standard geometric illumination percentage using the cosine angle
+//     let elong = (moon_age / lunar_cycle) * 360.0;
+//     let illumination = ((1.0 - elong.to_radians().cos()) / 2.0) * 100.0;
+
+//     // Waxing (+) vs Waning (-)
+//     let waxing = moon_age <= (lunar_cycle / 2.0);
+//     let sign = if waxing { "+" } else { "-" };
+
+//     // Precise fractional days until the upcoming New/Full Moon change
+//     let days_to = if waxing {
+//         (lunar_cycle / 2.0) - moon_age
+//     } else {
+//         lunar_cycle - moon_age
+//     };
+
+//     let icon = if illumination < 1.5 { "🌑" } else { "🌙" };
+
+//     // format!("{} {:.0}%{} ({:.0}d)", icon, illumination, sign, days_to.round())
+//     format!("{} {:.1}%{} ({:.0}d)", icon, illumination, sign, days_to.round())
+// }
+
+// fn compute_label() -> String {
+//     use moontool::moon::ToJSON; // Unlock the JSON serialization trait
+//     use moontool::moon::ForDateTime;
+
+//     // 1. Fetch the official real-time moon data payload
+//     let phase: MoonPhase = ForDateTime::now();
+
+//     // 2. Call the native serialization method to get the pure JSON string context
+//     let json_text = phase.to_json();
+//     println!("\n=== PHASEJSOAN {} ===", json_text);
+//     // 3. Parse the data fields safely using your serde dependency framework
+//     let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
+//         Ok(v) => v,
+//         Err(_) => return "🌑 Parse Err".to_string(),
+//     };
+
+//     // 4. Extract the exact tracking variables verified by the library specs
+//     let fraction_illuminated = parsed["fraction_illuminated"].as_f64().unwrap_or(0.0);
+//     let fraction_of_lunation = parsed["fraction_of_lunation"].as_f64().unwrap_or(0.0);
+
+//     let pct = fraction_illuminated * 100.0;
+    
+//     // 5. Determine direction: Waxing (+) vs Waning (-)
+//     let waxing = fraction_of_lunation < 0.5;
+//     let sign = if waxing { "+" } else { "-" };
+
+//     // 6. Select matching status bar emoji parameters
+//     let icon = if pct < 1.5 { "🌑" } else { "🌙" };
+
+//     // 7. Format with high precision down to one decimal place
+//     format!("{} {:.1}%{}", icon, pct, sign)
+// }
+
+// fn compute_label() -> String {
+
+
+//     let phase: MoonPhase = ForDateTime::now();
+//     let json_text = phase.to_json();
+
+//     let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
+//         Ok(v) => v,
+//         Err(_) => return "🌑 Err".to_string(),
+//     };
+
+//     // 1. Correctly read the flat fields directly from the root of your JSON string
+//     let fraction_illuminated = parsed["fraction_illuminated"].as_f64().unwrap_or(0.0);
+//     let fraction_of_lunation = parsed["fraction_of_lunation"].as_f64().unwrap_or(0.0);
+//     let current_age = parsed["age"].as_f64().unwrap_or(0.0);
+
+//     let pct = fraction_illuminated * 100.0;
+    
+//     // 2. Determine if the phase trajectory is Waxing (+) or Waning (-)
+//     let waxing = fraction_of_lunation < 0.5;
+//     let sign = if waxing { "+" } else { "-" };
+
+//     // 3. Compute accurate relative days using the flat 'age' value against synodic month loops
+//     let synodic_month = 29.530588853;
+//     let days_remaining = if waxing {
+//         (synodic_month / 2.0) - current_age // Days left until full illumination
+//     } else {
+//         synodic_month - current_age         // Days left until full darkness (New Moon)
+//     };
+
+//     let icon = if pct < 1.0 { "🌑" } else { "🌙" };
+
+//     // 4. Output with high precision down to one decimal place
+//     format!("{} {:.1}%{} ({:.1}d)", icon, pct, sign, days_remaining)
+// }
+
+fn compute_label() -> String {
+    let phase: MoonPhase = ForDateTime::now();
+    let json_text = phase.to_json();
+
+    let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
+        Ok(v) => v,
+        Err(_) => return "🌑 Err".to_string(),
+    };
+
+    // 1. Extract numeric metrics from the root level
+    let fraction_illuminated = parsed["fraction_illuminated"].as_f64().unwrap_or(0.0);
+    let fraction_of_lunation = parsed["fraction_of_lunation"].as_f64().unwrap_or(0.0);
+    let current_age = parsed["age"].as_f64().unwrap_or(0.0);
+
+    // 2. Core Fix: Extract the native emoji string from the nested "phase" object
+    let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
+
+    let pct = fraction_illuminated * 100.0;
+    
+    // 3. Determine if the trajectory is Waxing (+) or Waning (-)
+    let waxing = fraction_of_lunation < 0.5;
+    // let sign = if waxing { "+" } else { "-" };
+    // let sign = if waxing { "▲" } else { "▼" };
+    // let sign = if waxing { "🔼" } else { "🔽" };
+    let sign = if waxing { "↑" } else { "↓" };
+
+    // 4. Compute fractional days until the upcoming target extreme
+    let synodic_month = 29.530588853;
+    let days_remaining = if waxing {
+        (synodic_month / 2.0) - current_age 
+    } else {
+        synodic_month - current_age         
+    };
+
+    // 5. Format layout smoothly using the library's official matching emoji
+    format!("{} {:.1}% {} ({:.1}d)", icon, pct, sign, days_remaining)
+}
+
+
+fn main() -> cosmic::iced::Result {
+    cosmic::applet::run::<MoonApplet>(())
+}   
+#[cfg(test)]
+mod tests {
+    use moontool::moon::{ForDateTime, ToJSON};
+
+    use super::*;
+
+    #[test]
+    fn test_output() {
+        // let phase = MoonPhase::now();
+        // //let json = phase.to_json();
+        // println!("\n=== PHASE {} ===", phase);
+        println!("\n=== APPLET TEST OUTPUT ===");
+        println!("Label: {}", compute_label());
+        println!("==========================\n");
+    }
+}
