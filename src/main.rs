@@ -1,10 +1,8 @@
 use std::time::Duration;
 
-use chrono::{Datelike, Timelike, Utc};
 use cosmic::app::Core;
 // use cosmic::iced::widget::{button, text, container};
 // use cosmic::iced::{Alignment, Length};
-use cosmic::iced::widget::{button, text};
 use cosmic::iced::{
     platform_specific::shell::commands::popup::{destroy_popup, get_popup},
     window::Id,
@@ -150,60 +148,7 @@ impl cosmic::Application for MoonApplet {
         Task::none()
     }
 
-    //     fn view(&self) -> Element<'_, Self::Message> {
-    //         let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
-    //             cosmic::widget::image(self.icon.clone()).width(24).height(24),
-    //             cosmic::iced::widget::text(&self.label).size(13.0),
-    //         ]
-    //         .spacing(6)
-    //         .align_y(cosmic::iced::Alignment::Center)
-    //         .into();
-
-    //     let bg: cosmic::Element<'_, Msg> = cosmic::iced::widget::container(row)
-    //         .style(|_t: &cosmic::Theme| cosmic::iced::widget::container::Style {
-    //             background: Some(cosmic::iced::Background::Color(
-    //                 cosmic::iced::Color::from_rgb8(20, 20, 20), // near-black
-    //             )),
-    //             text_color: Some(cosmic::iced::Color::WHITE),
-    //             ..Default::default()
-    //         })
-    //         .padding([2.0, 6.0])
-    //         .into();
-
-    //         self.core
-    //             .applet
-    //             .autosize_window(bg)
-    //             .into()
-    //     }
-
-    // fn view(&self) -> Element<'_, Self::Message> {
-    //     let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
-    //         cosmic::widget::image(self.icon.clone()).width(24).height(24),
-    //         cosmic::iced::widget::text(&self.label).size(13.0),
-    //     ]
-    //     .spacing(6)
-    //     .align_y(cosmic::iced::Alignment::Center)
-    //     .into();
-
-    //     let bg: cosmic::Element<'_, Msg> = cosmic::iced::widget::container(row)
-    //         .style(|_t: &cosmic::Theme| cosmic::iced::widget::container::Style {
-    //             background: Some(cosmic::iced::Background::Color(
-    //                 cosmic::iced::Color::from_rgb8(20, 20, 20), // near-black
-    //             )),
-    //             text_color: Some(cosmic::iced::Color::WHITE),
-    //             ..Default::default()
-    //         })
-    //         .padding([2.0, 6.0])
-    //         .into();
-
-    //     self.core
-    //         .applet
-    //         .autosize_window(
-    //             cosmic::iced::widget::button(bg)
-    //                 .on_press(Msg::TogglePopup),
-    //         )
-    //         .into()
-    // }
+    
 
     fn view(&self) -> Element<'_, Self::Message> {
         let row: cosmic::Element<'_, Msg> = cosmic::iced::widget::row![
@@ -278,7 +223,7 @@ fn compute_label() -> (String, usize, String, String) {
     let current_age = parsed["age"].as_f64().unwrap_or(0.0);
 
     // 2. Core Fix: Extract the native emoji string from the nested "phase" object
-    let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
+    // let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
 
     let pct = fraction_illuminated * 100.0;
 
@@ -288,7 +233,7 @@ fn compute_label() -> (String, usize, String, String) {
     // let sign = if waxing { "▲" } else { "▼" };
     // let sign = if waxing { "🔼" } else { "🔽" };
     // let sign = if waxing { "↑" } else { "↓" };
-    let sign = if waxing { "↗" } else { "↘" };
+    // let sign = if waxing { "↗" } else { "↘" };
     let next_state = if waxing { "Full Moon" } else { "New Moon" };
 
     // 4. Compute fractional days until the upcoming target extreme
@@ -312,7 +257,7 @@ fn compute_label() -> (String, usize, String, String) {
     } else if m > 0 {
         format!("in {} minutes", m)
     } else {
-        format!("now!")
+        "now!".to_string()
     };
 
     let day = (current_age.round() as usize).clamp(1, 29);
