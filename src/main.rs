@@ -1,4 +1,5 @@
 mod moon_data;
+use moon_data::MoonInfo;
 
 use std::time::Duration;
 use cosmic::app::Core;
@@ -8,10 +9,6 @@ use cosmic::iced::{
     Limits,
 };
 use cosmic::{Action, Element, Task};
-use moontool::moon::ToJSON;
-use moontool::moon::{ForDateTime, MoonCalendar, MoonPhase};
-
-use crate::moon_data::MoonInfo;
 
 const APP_ID: &str = "com.example.CosmicAppletMoon";
 
@@ -72,10 +69,8 @@ fn get_moon_phase_image(day: usize) -> cosmic::iced::widget::image::Handle {
 pub struct MoonApplet {
     core: Core,
     popup: Option<Id>,
-    label: String,
+    info: MoonInfo,
     icon: cosmic::iced::widget::image::Handle,
-    phase_name: String,
-    phase_calendar_text: String,
 }
 
 impl cosmic::Application for MoonApplet {
@@ -94,16 +89,14 @@ impl cosmic::Application for MoonApplet {
     }
 
     fn init(core: Core, _flags: Self::Flags) -> (Self, Task<Action<Msg>>) {
-        let (label, day, phase_name, phase_calendar_text) = compute_label();
-        let icon = get_moon_phase_image(day);
+        let info = MoonInfo::compute();
+        let icon = get_moon_phase_image(info.day);
         (
             Self {
                 core,
                 popup: None,
-                label,
+                info,
                 icon,
-                phase_name,
-                phase_calendar_text,
             },
             Task::none(),
         )
@@ -112,12 +105,10 @@ impl cosmic::Application for MoonApplet {
     fn update(&mut self, msg: Self::Message) -> Task<Action<Msg>> {
         match msg {
             Msg::Tick => {
-                let (label, day, phase_name, phase_calendar_text) = compute_label();
-                self.label = label;
-                self.icon = get_moon_phase_image(day);
-                self.phase_name = phase_name;
-                self.phase_calendar_text = phase_calendar_text;
+                self.info = MoonInfo::compute();
+                self.icon = get_moon_phase_image(self.info.day);
             }
+
             Msg::TogglePopup => {
                 let new_id = Id::unique();
                 self.popup.replace(new_id);
@@ -168,11 +159,17 @@ impl cosmic::Application for MoonApplet {
     fn view_window(&self, id: Id) -> Element<'_, Self::Message> {
         if Some(id) == self.popup {
             let content = cosmic::iced::widget::column![
-                cosmic::iced::widget::text(&self.label).size(14.0),
+                cosmic::iced::widget::container(
+                    cosmic::iced::widget::image(self.icon.clone()).width(48).height(48)
+                )
+                .width(cosmic::iced::Length::Fill)
+                .align_x(cosmic::iced::Alignment::Center),    
+                cosmic::iced::widget::rule::horizontal(2),                
+                cosmic::iced::widget::text(self.info.label()).size(10.0),
                 cosmic::iced::widget::rule::horizontal(2),
-                cosmic::iced::widget::text(&self.phase_calendar_text).size(9.0),
+                cosmic::iced::widget::text(self.info.calendar_to_string()).size(10.0),
                 cosmic::iced::widget::rule::horizontal(2),
-                cosmic::iced::widget::text(&self.phase_name).size(11.0),
+                cosmic::iced::widget::text(self.info.phase_to_string()).size(10.0),
             ]
             .spacing(4)
             .padding(8);
@@ -186,90 +183,10 @@ impl cosmic::Application for MoonApplet {
             cosmic::iced::widget::text("").into()
         }
     }
+
     fn subscription(&self) -> cosmic::iced::Subscription<Self::Message> {
-        cosmic::iced::time::every(Duration::from_secs(1440)).map(|_| Msg::Tick)
+        cosmic::iced::time::every(Duration::from_secs(60)).map(|_| Msg::Tick)
     }
-}
-
-fn compute_label() -> (String, usize, String, String) {
-    let moon_info: MoonInfo = MoonInfo::compute();
-
-    let fraction_illuminated = moon_info.phase.fraction_illuminated;
-    let fraction_of_lunation = moon_info.phase.fraction_of_lunation;
-    let current_age = moon_info.phase.age;
-
-    // 2. Core Fix: Extract the native emoji string from the nested "phase" object
-    // let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
-
-    let pct = fraction_illuminated * 100.0;
-
-    // 3. Determine if the trajectory is Waxing (+) or Waning (-)
-    let waxing = fraction_of_lunation < 0.5;
-    // let sign = if waxing { "+" } else { "-" };
-    // let sign = if waxing { "▲" } else { "▼" };
-    // let sign = if waxing { "🔼" } else { "🔽" };
-    // let sign = if waxing { "↑" } else { "↓" };
-    // let sign = if waxing { "↗" } else { "↘" };
-    let next_state = if waxing {
-        "Next Full Moon"
-    } else {
-        "Next New Moon"
-    };
-
-    // Use exact Julian dates from MoonCalendar
-    let current_jd = moon_info.calendar.julian_date;
-    let days_remaining = if waxing {
-        moon_info.calendar.full_moon - current_jd
-    } else {
-        moon_info.calendar.next_new_moon - current_jd
-    };
-
-    let total_minutes = (days_remaining * 24.0 * 60.0).round() as i64;
-    let d = total_minutes / (24 * 60);
-    let h = (total_minutes / 60) % 24;
-    let m = total_minutes % 60;
-
-    let time_remaining_str = if d > 0 {
-        format!("in {}d {}h {}m", d, h, m)
-    } else if h > 0 {
-        format!("in {}h {}m", h, m)
-    } else if m > 0 {
-        format!("in {} minutes", m)
-    } else {
-        "now!".to_string()
-    };
-
-    let day = (current_age.round() as usize).clamp(1, 29);
-    // 5. Format layout smoothly using the library's official matching emoji
-    // let label = format!("{} {:.3}% ({} to {})", sign, pct, time_remaining_str,next_state);
-    // let label = format!("{} {:.3}% {} {}", sign, pct,next_state , time_remaining_str);
-
-    let current_phase = if pct <= 1.0 {
-        "Current Moon Phase: === NEW MOON ===\n".to_string()
-    } else if pct >= 99.0 {
-        "Current Moon Phase: === FULL MOON ===\n".to_string()
-    } else if pct >= 49.0 && pct <= 51.0 && waxing {
-        "Current Moon Phase: === FIRST QUARTER ===\n".to_string()
-    } else if pct >= 49.0 && pct <= 51.0 && !waxing {
-        "Current Moon Phase: === LAST QUARTER ===\n".to_string()
-    } else {
-        "".to_string()
-    };
-
-    let label = format!(
-        "{}{} {}.\nCurrent Moon size: {:.3}% {}",
-        current_phase,
-        next_state,
-        time_remaining_str,
-        pct,
-        if waxing {
-            ", brightening(waxing)".to_string()
-        } else {
-            ", dimming(waning)".to_string()
-        }
-    );
-
-    (label, day, MoonInfo::phase_to_string(&moon_info), MoonInfo::calendar_to_string(&moon_info))
 }
 
 fn main() -> cosmic::iced::Result {
@@ -279,7 +196,7 @@ fn main() -> cosmic::iced::Result {
 mod tests {
     // use moontool::moon::{ForDateTime, ToJSON};
 
-    use super::*;
+    use super::moon_data::MoonInfo;
 
     #[test]
     fn test_output() {
@@ -290,17 +207,21 @@ mod tests {
         // let calendar: MoonCalendar = ForDateTime::now();
         // let cal_json = calendar.to_json();
         // println!("\n=== CAL JSON {} ===", cal_json);
-
+        let info = MoonInfo::compute();
 
         println!("\n======== APPLET TEST OUTPUT =======");
         println!("\n===Header:==========================\n");
-        println!("{}", compute_label().0);
+        println!("{}", info.label());
         println!("\n===MoonDay:========================\n");
-        println!("{}", compute_label().1);
-        println!("\n===Phase:==========================\n");
-        println!("{}", compute_label().2);
-        println!("\n===Calendar:=======================\n");
-        println!("{}", compute_label().3);
+        println!("{}", info.day);
+        println!("\n===PhaseToString:==========================\n");
+        println!("{}", info.phase_to_string());
+        println!("\n===PhaseValue:==========================\n");
+        println!("{}", info.phase.phase.name);
+        println!("\n===CalendarToString:=======================\n");
+        println!("{}", info.calendar_to_string());
         println!("\n=== APPLET TEST OUTPUT END ===\n");
     }
+
+
 }
