@@ -200,11 +200,11 @@ impl cosmic::Application for MoonApplet {
                 field_row("Next New Moon:", format_local(&c.next_new_moon_utc)),
                 field_row("Next First Quarter:", format_local(&c.first_quarter_utc)),
                 field_row("Next Last Quarter:", format_local(&c.last_quarter_utc)),
-                field_row("Local DateTime:", format_local(&c.utc_datetime)),  
                 cosmic::iced::widget::rule::horizontal(2),
                 field_row("Earth-Moon Distance:", format!("{:.0} km, {:.1} Earth Radii", p.distance_to_earth_km, p.distance_to_earth_earth_radii)),
                 field_row("Earth-Sun Distance:", format!("{:.0} km, {:.2} au", p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units)),
-
+                cosmic::iced::widget::rule::horizontal(2),
+                field_row("Local DateTime:", format_local(&c.utc_datetime)),  
                 // Calendar fields
              
             ]

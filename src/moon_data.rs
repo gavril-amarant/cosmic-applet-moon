@@ -111,15 +111,9 @@ impl MoonInfo {
         let waxing = phase_data.fraction_of_lunation < 0.5;
         let day = (phase_data.age.round() as usize).clamp(1, 29);
         let next_state = if waxing {
-            "Next Full Moon"
+            "Full Moon in:"
         } else {
-            "Next New Moon"
-        };
-
-        let next_state_date = if waxing {
-            format_local_short(&calendar_data.full_moon_utc)
-        } else {
-            format_local_short(&calendar_data.next_new_moon_utc)
+            "New Moon in:"
         };
 
         let current_jd = calendar_data.julian_date;
@@ -135,11 +129,11 @@ impl MoonInfo {
         let m = total_minutes % 60;
 
         let time_remaining = if d > 0 {
-            format!("in {}d {}h {}m on {}", d, h, m, next_state_date)
+            format!("{}d {}h {}m", d, h, m)
         } else if h > 0 {
-            format!("in {}h {}m on {}", h, m, next_state_date)
+            format!("{}h {}m", h, m)
         } else if m > 0 {
-            format!("in {} minutes", m)
+            format!("{} minutes", m)
         } else {
             "now!".to_string()
         };
