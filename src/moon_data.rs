@@ -2,6 +2,7 @@ use moontool::moon::ToJSON;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
 pub struct PhaseInfo {
     pub index: u8,
     pub name: String,
@@ -9,6 +10,7 @@ pub struct PhaseInfo {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
 pub struct MoonPhaseData {
     pub julian_date: f64,
     pub timestamp: i64,
@@ -30,6 +32,7 @@ pub struct MoonPhaseData {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
 pub struct MoonCalendarData {
     pub julian_date: f64,
     pub timestamp: i64,
@@ -48,6 +51,7 @@ pub struct MoonCalendarData {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MoonInfo {
     pub phase: MoonPhaseData,
     pub calendar: MoonCalendarData,
@@ -58,23 +62,15 @@ pub struct MoonInfo {
     pub next_state: &'static str,
     pub time_remaining: String,
 }
-
-fn format_utc(s: &str) -> String {
+#[allow(dead_code)]
+pub fn format_utc(s: &str) -> String {
     use chrono::{DateTime, Utc};
     s.parse::<DateTime<Utc>>()
         .map(|dt| dt.format("%A %d %b %Y %H:%M:%S").to_string())
         .unwrap_or_else(|_| s.to_string())
 }
 
-fn format_fields(fields: &[(&str, String)]) -> String {
-    let max_w = fields.iter().map(|(l, _)| l.len()).max().unwrap_or(0) + 1;
-    fields.iter()
-        .map(|(label, value)| format!("{:<width$}{}", label, value, width = max_w))
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-fn format_local(s: &str) -> String {
+pub fn format_local(s: &str) -> String {
     use chrono::{DateTime, Local, Utc};
     s.parse::<DateTime<Utc>>()
         .map(|dt| {
@@ -88,7 +84,7 @@ fn format_local(s: &str) -> String {
         .unwrap_or_else(|_| s.to_string())
 }
 
-fn format_local_short(s: &str) -> String {
+pub fn format_local_short(s: &str) -> String {
     use chrono::{DateTime, Local, Utc};
     s.parse::<DateTime<Utc>>()
         .map(|dt| {
@@ -159,79 +155,4 @@ impl MoonInfo {
         }
     }
 
-    /// The main label shown in the popup.
-    pub fn label(&self) -> String {
-
-        let p = &self.phase;
-
-        let total_minutes = (p.age * 24.0 * 60.0).round() as i64;
-        let d = total_minutes / (24 * 60);
-        let h = (total_minutes / 60) % 24;
-        let m = total_minutes % 60;
-
-        let age_str = if d > 0 {
-            format!("{}d {}h {}m", d, h, m)
-        } else if h > 0 {
-            format!("{}h {}m", h, m)
-        } else {
-            format!("{} minutes", m)
-        };
-
-        format!(
-            "Moon Phase: {}\nIllumination: {:.3}%\nMoon Age: {}\n{} {}.",
-            self.phase.phase.name,
-            self.illumination,
-            age_str,
-            self.next_state,
-            self.time_remaining
-        )
-    }
-
-    pub fn phase_to_string(&self) -> String {
-        let p = &self.phase;
-
-        format!(
-            // "Julian Date:\t{:.6}\n\
-            //  Timestamp:\t{}\n\
-            "Earth-Moon Distance:   \t{:.0} km, {:.1} Earth Radii\n\
-             Earth-Sun Distance:   \t{:.0} km, {:.2} au",
-            // p.julian_date,
-            // p.timestamp,
-            // p.age,
-            // p.fraction_of_lunation,
-            // p.phase.index,
-            // p.phase.name,
-            // p.phase.icon,
-            // p.fraction_illuminated,
-            // p.ecliptic_longitude,
-            // p.ecliptic_latitude,
-            // p.parallax,
-            p.distance_to_earth_km,
-            p.distance_to_earth_earth_radii,
-            p.sun_distance_to_earth_km,
-            p.sun_distance_to_earth_astronomical_units,
-            // p.subtends,
-        )
-    }
-
-    pub fn calendar_to_string(&self) -> String {
-        let c = &self.calendar;
-        format!(
-            // "Julian Date:\t{:.6}\n\
-            // Timestamp:\t{}\n\
-            "Next Full Moon:\t{}\n\
-                Next New Moon:\t{}\n\
-                Next First Quarter:\t{}\n\
-                Next Last Quarter:\t{}\n\n\
-                Local DateTime:\t{}",
-            // c.julian_date,
-            // c.timestamp,
-            // c.lunation,
-            format_local(&c.full_moon_utc),
-            format_local(&c.next_new_moon_utc),
-            format_local(&c.first_quarter_utc),
-            format_local(&c.last_new_moon_utc),
-            format_local(&c.utc_datetime),
-        )
-    }
 }

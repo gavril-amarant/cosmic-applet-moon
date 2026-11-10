@@ -1,5 +1,5 @@
 mod moon_data;
-use moon_data::MoonInfo;
+use moon_data::{MoonInfo, format_local};   
 
 use std::time::Duration;
 use cosmic::app::Core;
@@ -31,6 +31,15 @@ macro_rules! moon_icons {
         }
     };
 }
+
+fn field_row<'a>(label: &'a str, value: String) -> cosmic::Element<'a, Msg> {
+    cosmic::widget::row![
+        cosmic::widget::text(label).width(cosmic::iced::Length::Fixed(113.0)).size(10.0),
+        cosmic::widget::text(value).size(10.0),
+    ]
+    .spacing(8)
+    .into()
+}    
 
 fn get_moon_phase_image(day: usize) -> cosmic::iced::widget::image::Handle {
     moon_icons!(day,
@@ -157,6 +166,23 @@ impl cosmic::Application for MoonApplet {
     }
 
     fn view_window(&self, id: Id) -> Element<'_, Self::Message> {
+
+        let p = &self.info.phase;
+        let c = &self.info.calendar;
+
+        let total_minutes = (p.age * 24.0 * 60.0).round() as i64;
+        let d = total_minutes / (24 * 60);
+        let h = (total_minutes / 60) % 24;
+        let m = total_minutes % 60;
+
+        let age_str = if d > 0 {
+            format!("{}d {}h {}m", d, h, m)
+        } else if h > 0 {
+            format!("{}h {}m", h, m)
+        } else {
+            format!("{} minutes", m)
+        };
+
         if Some(id) == self.popup {
             let content = cosmic::iced::widget::column![
                 cosmic::iced::widget::container(
@@ -165,13 +191,24 @@ impl cosmic::Application for MoonApplet {
                 .width(cosmic::iced::Length::Fill)
                 .align_x(cosmic::iced::Alignment::Center),    
                 cosmic::iced::widget::rule::horizontal(2),                
-                cosmic::iced::widget::text(self.info.label()).size(10.0),
+                field_row("Moon Phase:", self.info.phase.phase.name.clone()),
+                field_row("Illumination:", format!("{:.3}%", self.info.illumination)),
+                field_row("Moon Age:", age_str),
+                field_row(self.info.next_state, self.info.time_remaining.clone()),   
                 cosmic::iced::widget::rule::horizontal(2),
-                cosmic::iced::widget::text(self.info.calendar_to_string()).size(10.0),
+                field_row("Next Full Moon:", format_local(&c.full_moon_utc)),
+                field_row("Next New Moon:", format_local(&c.next_new_moon_utc)),
+                field_row("Next First Quarter:", format_local(&c.first_quarter_utc)),
+                field_row("Next Last Quarter:", format_local(&c.last_quarter_utc)),
+                field_row("Local DateTime:", format_local(&c.utc_datetime)),  
                 cosmic::iced::widget::rule::horizontal(2),
-                cosmic::iced::widget::text(self.info.phase_to_string()).size(10.0),
+                field_row("Earth-Moon Distance:", format!("{:.0} km, {:.1} Earth Radii", p.distance_to_earth_km, p.distance_to_earth_earth_radii)),
+                field_row("Earth-Sun Distance:", format!("{:.0} km, {:.2} au", p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units)),
+
+                // Calendar fields
+             
             ]
-            .spacing(4)
+            .spacing(2)
             .padding(8);
 
             self.core
@@ -196,9 +233,10 @@ fn main() -> cosmic::iced::Result {
 mod tests {
     // use moontool::moon::{ForDateTime, ToJSON};
 
-    use super::moon_data::MoonInfo;
+    // use super::moon_data::MoonInfo;
 
     #[test]
+    #[allow(dead_code)]
     fn test_output() {
         // let phase = MoonPhase::now();
         // let json = phase.to_json();
@@ -207,20 +245,21 @@ mod tests {
         // let calendar: MoonCalendar = ForDateTime::now();
         // let cal_json = calendar.to_json();
         // println!("\n=== CAL JSON {} ===", cal_json);
-        let info = MoonInfo::compute();
+        
+        // let info = MoonInfo::compute();
 
-        println!("\n======== APPLET TEST OUTPUT =======");
-        println!("\n===Header:==========================\n");
-        println!("{}", info.label());
-        println!("\n===MoonDay:========================\n");
-        println!("{}", info.day);
-        println!("\n===PhaseToString:==========================\n");
-        println!("{}", info.phase_to_string());
-        println!("\n===PhaseValue:==========================\n");
-        println!("{}", info.phase.phase.name);
-        println!("\n===CalendarToString:=======================\n");
-        println!("{}", info.calendar_to_string());
-        println!("\n=== APPLET TEST OUTPUT END ===\n");
+        // println!("\n======== APPLET TEST OUTPUT =======");
+        // println!("\n===Header:==========================\n");
+        // println!("{}", info.label());
+        // println!("\n===MoonDay:========================\n");
+        // println!("{}", info.day);
+        // println!("\n===PhaseToString:==========================\n");
+        // println!("{}", info.phase_to_string());
+        // println!("\n===PhaseValue:==========================\n");
+        // println!("{}", info.phase.phase.name);
+        // println!("\n===CalendarToString:=======================\n");
+        // println!("{}", info.calendar_to_string());
+        // println!("\n=== APPLET TEST OUTPUT END ===\n");
     }
 
 
