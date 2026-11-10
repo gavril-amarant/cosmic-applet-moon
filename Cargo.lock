@@ -912,6 +912,7 @@ dependencies = [
  "chrono",
  "libcosmic",
  "moontool",
+ "serde",
  "serde_json",
 ]
 

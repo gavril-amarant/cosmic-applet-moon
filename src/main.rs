@@ -1,5 +1,6 @@
-use std::time::Duration;
+mod moon_data;
 
+use std::time::Duration;
 use cosmic::app::Core;
 use cosmic::iced::{
     platform_specific::shell::commands::popup::{get_popup},
@@ -9,6 +10,8 @@ use cosmic::iced::{
 use cosmic::{Action, Element, Task};
 use moontool::moon::ToJSON;
 use moontool::moon::{ForDateTime, MoonCalendar, MoonPhase};
+
+use crate::moon_data::MoonInfo;
 
 const APP_ID: &str = "com.example.CosmicAppletMoon";
 
@@ -189,29 +192,11 @@ impl cosmic::Application for MoonApplet {
 }
 
 fn compute_label() -> (String, usize, String, String) {
-    let phase: MoonPhase = ForDateTime::now();
-    let phase_calendar: MoonCalendar = ForDateTime::now();
+    let moon_info: MoonInfo = MoonInfo::compute();
 
-    let json_text = phase.to_json();
-    let cal_json = phase_calendar.to_json();
-
-    let parsed: serde_json::Value = match serde_json::from_str(&json_text) {
-        Ok(v) => v,
-        Err(_) => {
-            return (
-                "🌑 Err".to_string(),
-                1,
-                "🌑 Err".to_string(),
-                "🌑 Err".to_string(),
-            )
-        }
-    };
-    let cal_parsed: serde_json::Value = serde_json::from_str(&cal_json).unwrap_or_default();
-
-    // 1. Extract numeric metrics from the root level
-    let fraction_illuminated = parsed["fraction_illuminated"].as_f64().unwrap_or(0.0);
-    let fraction_of_lunation = parsed["fraction_of_lunation"].as_f64().unwrap_or(0.0);
-    let current_age = parsed["age"].as_f64().unwrap_or(0.0);
+    let fraction_illuminated = moon_info.phase.fraction_illuminated;
+    let fraction_of_lunation = moon_info.phase.fraction_of_lunation;
+    let current_age = moon_info.phase.age;
 
     // 2. Core Fix: Extract the native emoji string from the nested "phase" object
     // let icon = parsed["phase"]["icon"].as_str().unwrap_or("🌙");
@@ -232,11 +217,11 @@ fn compute_label() -> (String, usize, String, String) {
     };
 
     // Use exact Julian dates from MoonCalendar
-    let current_jd = cal_parsed["julian_date"].as_f64().unwrap_or(0.0);
+    let current_jd = moon_info.calendar.julian_date;
     let days_remaining = if waxing {
-        cal_parsed["full_moon"].as_f64().unwrap_or(0.0) - current_jd
+        moon_info.calendar.full_moon - current_jd
     } else {
-        cal_parsed["next_new_moon"].as_f64().unwrap_or(0.0) - current_jd
+        moon_info.calendar.next_new_moon - current_jd
     };
 
     let total_minutes = (days_remaining * 24.0 * 60.0).round() as i64;
@@ -284,15 +269,7 @@ fn compute_label() -> (String, usize, String, String) {
         }
     );
 
-    let phase_text = format!("{}", phase);
-    let phase_calendar_text = format!("{}", phase_calendar);
-
-    let clean: String = phase_calendar_text
-        .chars()
-        .filter(|c| c.is_alphanumeric() || *c == ' ' || *c == '\n' || *c == '\t')
-        .collect();
-
-    (label, day, phase_text, clean)
+    (label, day, MoonInfo::phase_to_string(&moon_info), MoonInfo::calendar_to_string(&moon_info))
 }
 
 fn main() -> cosmic::iced::Result {
@@ -300,19 +277,19 @@ fn main() -> cosmic::iced::Result {
 }
 #[cfg(test)]
 mod tests {
-    use moontool::moon::{ForDateTime, ToJSON};
+    // use moontool::moon::{ForDateTime, ToJSON};
 
     use super::*;
 
     #[test]
     fn test_output() {
-        let phase = MoonPhase::now();
-        let json = phase.to_json();
-        println!("\n=== PHASE JSON {} ===", json);
+        // let phase = MoonPhase::now();
+        // let json = phase.to_json();
+        // println!("\n=== PHASE JSON {} ===", json);
 
-        let calendar: MoonCalendar = ForDateTime::now();
-        let cal_json = calendar.to_json();
-        println!("\n=== CAL JSON {} ===", cal_json);
+        // let calendar: MoonCalendar = ForDateTime::now();
+        // let cal_json = calendar.to_json();
+        // println!("\n=== CAL JSON {} ===", cal_json);
 
 
         println!("\n======== APPLET TEST OUTPUT =======");
