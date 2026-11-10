@@ -119,25 +119,21 @@ impl cosmic::Application for MoonApplet {
                 self.phase_calendar_text = phase_calendar_text;
             }
             Msg::TogglePopup => {
-                if let Some(p) = self.popup.take() {
-                    return destroy_popup(p);
-                } else {
-                    let new_id = Id::unique();
-                    self.popup.replace(new_id);
-                    let mut popup_settings = self.core.applet.get_popup_settings(
-                        self.core.main_window_id().unwrap(),
-                        new_id,
-                        Some((420, 400)),
-                        None,
-                        None,
-                    );
-                    popup_settings.positioner.size_limits = Limits::NONE
-                        .min_width(200.0)
-                        .min_height(80.0)
-                        .max_width(600.0)
-                        .max_height(500.0);
-                    return get_popup(popup_settings);
-                }
+                let new_id = Id::unique();
+                self.popup.replace(new_id);
+                let mut popup_settings = self.core.applet.get_popup_settings(
+                    self.core.main_window_id().unwrap(),
+                    new_id,
+                    Some((420, 400)),
+                    None,
+                    None,
+                );
+                popup_settings.positioner.size_limits = Limits::NONE
+                    .min_width(200.0)
+                    .min_height(80.0)
+                    .max_width(600.0)
+                    .max_height(500.0);
+                return get_popup(popup_settings);
             }
             Msg::PopupClosed(id) => {
                 if self.popup == Some(id) {
