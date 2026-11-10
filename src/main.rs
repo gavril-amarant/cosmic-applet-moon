@@ -41,6 +41,15 @@ fn field_row<'a>(label: &'a str, value: String) -> cosmic::Element<'a, Msg> {
     .into()
 }    
 
+fn field_row_short<'a>(label: &'a str, value: String) -> cosmic::Element<'a, Msg> {
+    cosmic::widget::row![
+        cosmic::widget::text(label).width(cosmic::iced::Length::Fixed(70.0)).size(10.0),
+        cosmic::widget::text(value).size(10.0),
+    ]
+    .spacing(8)
+    .into()
+}
+
 fn get_moon_phase_image(day: usize) -> cosmic::iced::widget::image::Handle {
     moon_icons!(day,
         1 => "../assets/icons/moon-1-NM.png",
@@ -185,16 +194,18 @@ impl cosmic::Application for MoonApplet {
 
         if Some(id) == self.popup {
             let content = cosmic::iced::widget::column![
-                cosmic::iced::widget::container(
-                    cosmic::iced::widget::image(self.icon.clone()).width(48).height(48)
-                )
-                .width(cosmic::iced::Length::Fill)
-                .align_x(cosmic::iced::Alignment::Center),    
-                cosmic::iced::widget::rule::horizontal(2),                
-                field_row("Moon Phase:", self.info.phase.phase.name.clone()),
-                field_row("Illumination:", format!("{:.3}%", self.info.illumination)),
-                field_row("Moon Age:", age_str),
-                field_row(self.info.next_state, self.info.time_remaining.clone()),   
+                cosmic::iced::widget::row![
+                    cosmic::iced::widget::image(self.icon.clone()).width(48).height(48),
+                    cosmic::iced::widget::column![
+                        field_row_short("Moon Phase:", self.info.phase.phase.name.clone()),
+                        field_row_short("Illumination:", format!("{:.3}%", self.info.illumination)),
+                        field_row_short("Moon Age:", age_str),
+                        field_row_short(self.info.next_state, self.info.time_remaining.clone()),
+                    ]
+                    .spacing(2),
+                ]
+                .spacing(8)
+                .align_y(cosmic::iced::Alignment::Center),
                 cosmic::iced::widget::rule::horizontal(2),
                 field_row("Next Full Moon:", format_local(&c.full_moon_utc)),
                 field_row("Next New Moon:", format_local(&c.next_new_moon_utc)),
@@ -204,9 +215,7 @@ impl cosmic::Application for MoonApplet {
                 field_row("Earth-Moon Distance:", format!("{:.0} km, {:.1} Earth Radii", p.distance_to_earth_km, p.distance_to_earth_earth_radii)),
                 field_row("Earth-Sun Distance:", format!("{:.0} km, {:.2} au", p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units)),
                 cosmic::iced::widget::rule::horizontal(2),
-                field_row("Local DateTime:", format_local(&c.utc_datetime)),  
-                // Calendar fields
-             
+                field_row("Local DateTime:", format_local(&c.utc_datetime)),
             ]
             .spacing(2)
             .padding(8);
