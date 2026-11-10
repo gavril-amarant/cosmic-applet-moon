@@ -1,10 +1,8 @@
 use std::time::Duration;
 
 use cosmic::app::Core;
-// use cosmic::iced::widget::{button, text, container};
-// use cosmic::iced::{Alignment, Length};
 use cosmic::iced::{
-    platform_specific::shell::commands::popup::{destroy_popup, get_popup},
+    platform_specific::shell::commands::popup::{get_popup},
     window::Id,
     Limits,
 };
@@ -68,7 +66,6 @@ fn get_moon_phase_image(day: usize) -> cosmic::iced::widget::image::Handle {
     )
 }
 
-// In your struct, store the handle:
 pub struct MoonApplet {
     core: Core,
     popup: Option<Id>,
@@ -234,7 +231,6 @@ fn compute_label() -> (String, usize, String, String) {
         "Next New Moon"
     };
 
-    // 4. Compute fractional days until the upcoming target extreme
     // Use exact Julian dates from MoonCalendar
     let current_jd = cal_parsed["julian_date"].as_f64().unwrap_or(0.0);
     let days_remaining = if waxing {
@@ -276,19 +272,18 @@ fn compute_label() -> (String, usize, String, String) {
     };
 
     let label = format!(
-        "{}{} {}.\nMoon size now is {:.3}% and {}",
+        "{}{} {}.\nCurrent Moon size: {:.3}% {}",
         current_phase,
         next_state,
         time_remaining_str,
         pct,
         if waxing {
-            "getting bigger".to_string()
+            ", brightening(waxing)".to_string()
         } else {
-            "getting smaller".to_string()
+            ", dimming(waning)".to_string()
         }
     );
 
-    // The human-readable phase name from moontool's Display impl
     let phase_text = format!("{}", phase);
     let phase_calendar_text = format!("{}", phase_calendar);
 
@@ -311,14 +306,24 @@ mod tests {
 
     #[test]
     fn test_output() {
-        // let phase = MoonPhase::now();
-        // //let json = phase.to_json();
-        // println!("\n=== PHASE {} ===", phase);
-        println!("\n=== APPLET TEST OUTPUT ===");
-        println!("\nLabel: {}", compute_label().0);
-        println!("==========================\n");
-        println!("Phase: {}", compute_label().2);
-        println!("\n==========================\n");
-        println!("Calendar: {}", compute_label().3);
+        let phase = MoonPhase::now();
+        let json = phase.to_json();
+        println!("\n=== PHASE JSON {} ===", json);
+
+        let calendar: MoonCalendar = ForDateTime::now();
+        let cal_json = calendar.to_json();
+        println!("\n=== CAL JSON {} ===", cal_json);
+
+
+        println!("\n======== APPLET TEST OUTPUT =======");
+        println!("\n===Header:==========================\n");
+        println!("{}", compute_label().0);
+        println!("\n===MoonDay:========================\n");
+        println!("{}", compute_label().1);
+        println!("\n===Phase:==========================\n");
+        println!("{}", compute_label().2);
+        println!("\n===Calendar:=======================\n");
+        println!("{}", compute_label().3);
+        println!("\n=== APPLET TEST OUTPUT END ===\n");
     }
 }
