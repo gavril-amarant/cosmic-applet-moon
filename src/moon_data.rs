@@ -84,19 +84,6 @@ pub fn format_local(s: &str) -> String {
         .unwrap_or_else(|_| s.to_string())
 }
 
-pub fn format_local_short(s: &str) -> String {
-    use chrono::{DateTime, Local, Utc};
-    s.parse::<DateTime<Utc>>()
-        .map(|dt| {
-            let local: DateTime<Local> = dt.with_timezone(&Local);
-            format!(
-                "{}",
-                local.format("%A, %d %b %Y")
-            )
-        })
-        .unwrap_or_else(|_| s.to_string())
-}
-
 impl MoonInfo {
     pub fn compute() -> Self {
         let phase: moontool::moon::MoonPhase = moontool::moon::ForDateTime::now();
