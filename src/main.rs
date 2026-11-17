@@ -198,7 +198,7 @@ impl cosmic::Application for MoonApplet {
                     cosmic::iced::widget::image(self.icon.clone()).width(48).height(48),
                     cosmic::iced::widget::column![
                         field_row_short("Moon Phase:", self.info.phase.phase.name.clone()),
-                        field_row_short("Illumination:", format!("{:.3}%", self.info.illumination)),
+                        field_row_short("Illumination:", format!("{:.1}%", self.info.illumination)),
                         field_row_short("Moon Age:", age_str),
                         field_row_short(self.info.next_state, self.info.time_remaining.clone()),
                     ]
