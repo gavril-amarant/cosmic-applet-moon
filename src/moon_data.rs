@@ -1,6 +1,8 @@
 use moontool::moon::ToJSON;
 use serde::Deserialize;
 
+// ── Data structures (unchanged) ──────────────────────────────
+
 #[derive(Debug, Clone, Deserialize)]
 #[allow(dead_code)]
 pub struct PhaseInfo {
@@ -55,19 +57,29 @@ pub struct MoonCalendarData {
 pub struct MoonInfo {
     pub phase: MoonPhaseData,
     pub calendar: MoonCalendarData,
-    // computed
     pub illumination: f64,
     pub waxing: bool,
     pub day: usize,
     pub next_state: &'static str,
     pub time_remaining: String,
 }
-#[allow(dead_code)]
-pub fn format_utc(s: &str) -> String {
-    use chrono::{DateTime, Utc};
-    s.parse::<DateTime<Utc>>()
-        .map(|dt| dt.format("%A %d %b %Y %H:%M:%S").to_string())
-        .unwrap_or_else(|_| s.to_string())
+
+// ── Formatting helpers ───────────────────────────────────────
+
+pub fn format_age(days: f64) -> String {
+    let total_minutes = (days * 24.0 * 60.0).round() as i64;
+    let d = total_minutes / (24 * 60);
+    let h = (total_minutes / 60) % 24;
+    let m = total_minutes % 60;
+    if d > 0 {
+        format!("{}d {}h {}m", d, h, m)
+    } else if h > 0 {
+        format!("{}h {}m", h, m)
+    } else if m > 0 {
+        format!("{} minutes", m)
+    } else {
+        "now!".to_string()
+    }
 }
 
 pub fn format_local(s: &str) -> String {
@@ -84,6 +96,8 @@ pub fn format_local(s: &str) -> String {
         .unwrap_or_else(|_| s.to_string())
 }
 
+// ── Computation ──────────────────────────────────────────────
+
 impl MoonInfo {
     pub fn compute() -> Self {
         let phase: moontool::moon::MoonPhase = moontool::moon::ForDateTime::now();
@@ -97,32 +111,13 @@ impl MoonInfo {
         let illumination = phase_data.fraction_illuminated * 100.0;
         let waxing = phase_data.fraction_of_lunation < 0.5;
         let day = (phase_data.age.round() as usize).clamp(1, 29);
-        let next_state = if waxing {
-            "Full Moon in:"
-        } else {
-            "New Moon in:"
-        };
+        let next_state = if waxing { "Full Moon in:" } else { "New Moon in:" };
 
         let current_jd = calendar_data.julian_date;
         let target_jd = if waxing {
             calendar_data.full_moon
         } else {
             calendar_data.next_new_moon
-        };
-        let days_remaining = target_jd - current_jd;
-        let total_minutes = (days_remaining * 24.0 * 60.0).round() as i64;
-        let d = total_minutes / (24 * 60);
-        let h = (total_minutes / 60) % 24;
-        let m = total_minutes % 60;
-
-        let time_remaining = if d > 0 {
-            format!("{}d {}h {}m", d, h, m)
-        } else if h > 0 {
-            format!("{}h {}m", h, m)
-        } else if m > 0 {
-            format!("{} minutes", m)
-        } else {
-            "now!".to_string()
         };
 
         Self {
@@ -132,8 +127,7 @@ impl MoonInfo {
             waxing,
             day,
             next_state,
-            time_remaining,
+            time_remaining: format_age(target_jd - current_jd),
         }
     }
-
-}
+}   
