@@ -192,6 +192,24 @@ impl cosmic::Application for MoonApplet {
             format!("{} minutes", m)
         };
 
+        let now_str = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+
+        let mut events: Vec<(&str, &str)> = vec![
+            ("Next New Moon:", &c.next_new_moon_utc),
+            ("Next Full Moon:", &c.full_moon_utc),
+            ("Next First Quarter:", &c.first_quarter_utc),
+            ("Next Last Quarter:", &c.last_quarter_utc),
+        ];
+
+        events.retain(|(_, s)| *s > now_str.as_str());
+        events.sort_by(|a, b| a.1.cmp(b.1));   
+
+        let event_rows: Vec<cosmic::Element<'_, Msg>> = events
+            .iter()
+            .map(|(label, dt)| field_row(*label, format_local(dt)).into())
+            .collect();
+
+
         if Some(id) == self.popup {
             let content = cosmic::iced::widget::column![
                 cosmic::iced::widget::row![
@@ -207,10 +225,7 @@ impl cosmic::Application for MoonApplet {
                 .spacing(8)
                 .align_y(cosmic::iced::Alignment::Center),
                 cosmic::iced::widget::rule::horizontal(2),
-                field_row("Next Full Moon:", format_local(&c.full_moon_utc)),
-                field_row("Next New Moon:", format_local(&c.next_new_moon_utc)),
-                field_row("Next First Quarter:", format_local(&c.first_quarter_utc)),
-                field_row("Next Last Quarter:", format_local(&c.last_quarter_utc)),
+                cosmic::iced::widget::column(event_rows).spacing(2),
                 cosmic::iced::widget::rule::horizontal(2),
                 field_row("Earth-Moon Distance:", format!("{:.0} km, {:.1} Earth Radii", p.distance_to_earth_km, p.distance_to_earth_earth_radii)),
                 field_row("Earth-Sun Distance:", format!("{:.0} km, {:.2} au", p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units)),
