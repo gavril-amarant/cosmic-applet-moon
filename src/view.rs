@@ -149,15 +149,5 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
     .spacing(2)
     .padding(8);
 
-    cosmic::iced::widget::Container::new(content)
-        .style(|theme| {
-            let cosmic = theme.cosmic();
-            cosmic::iced::widget::container::Style {
-                background: Some(
-                    cosmic::iced::Color::from(cosmic.background(true).base).into(),
-                ),
-                ..Default::default()
-            }
-        })
-        .into()
+    content.into()
 }

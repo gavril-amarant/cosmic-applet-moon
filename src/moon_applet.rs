@@ -1,8 +1,19 @@
 use cosmic::app::Core;
+use cosmic::iced::Limits;
 use cosmic::iced::window::Id;
 use cosmic::{Action, Element, Task};
 use crate::moon_data::MoonInfo;
 use crate::view::{get_moon_phase_image, view_panel, view_popup};
+use cosmic::surface::action::{app_popup, destroy_popup};
+
+
+#[derive(Debug, Clone)]
+pub enum Msg {
+    Tick,
+    TogglePopup,
+    // Surface(cosmic::surface::Action<Msg>),
+    PopupClosed(Id),
+}
 
 const APP_ID: &str = "com.example.CosmicAppletMoon";
 
@@ -13,13 +24,6 @@ pub struct MoonApplet {
     pub icon: cosmic::iced::widget::image::Handle,
 }
 
-#[derive(Debug, Clone)]
-pub enum Msg {
-    Tick,
-    TogglePopup,
-    #[allow(dead_code)]
-    PopupClosed(Id),
-}
 
 impl cosmic::Application for MoonApplet {
     type Executor = cosmic::executor::Default;
@@ -59,22 +63,38 @@ impl cosmic::Application for MoonApplet {
                 self.icon = get_moon_phase_image(self.info.day);
             }
             Msg::TogglePopup => {
-                let new_id = Id::unique();
-                self.popup.replace(new_id);
-                let mut popup_settings = self.core.applet.get_popup_settings(
-                    self.core.main_window_id().unwrap(),
-                    new_id,
-                    Some((420, 400)),
+                if let Some(p) = self.popup.take() {
+                    return cosmic::surface::surface_task(destroy_popup(p));
+                }
+
+                return cosmic::surface::surface_task(app_popup(
+
+                    |_| Default::default(),
+                    |app: &mut Self| {
+                        let new_id = Id::unique();
+                        app.popup = Some(new_id);
+
+                        let mut popup_settings = app.core.applet.get_popup_settings(
+                            app.core.main_window_id().unwrap(),
+                            new_id,
+                            Some((420, 400)),
+                            None,
+                            None,
+                        );
+                        popup_settings.positioner.size_limits = Limits::NONE
+                            .min_width(200.0)
+                            .min_height(80.0)
+                            .max_width(600.0)
+                            .max_height(500.0);
+
+                        popup_settings
+                    },
                     None,
-                    None,
-                );
-                popup_settings.positioner.size_limits = cosmic::iced::Limits::NONE
-                    .min_width(200.0)
-                    .min_height(80.0)
-                    .max_width(600.0)
-                    .max_height(500.0);
-                return cosmic::iced::platform_specific::shell::commands::popup::get_popup(popup_settings);
+                ));
             }
+            // Msg::Surface(action) => {
+            //     return cosmic::surface::surface_task(action);
+            // }   
             Msg::PopupClosed(id) => {
                 if self.popup == Some(id) {
                     self.popup = None;
@@ -87,5 +107,10 @@ impl cosmic::Application for MoonApplet {
     fn subscription(&self) -> cosmic::iced::Subscription<Msg> {
         cosmic::iced::time::every(std::time::Duration::from_secs(60)).map(|_| Msg::Tick)
     }   
+
+    fn on_close_requested(&self, id: Id) -> Option<Msg> {
+        Some(Msg::PopupClosed(id))
+    }
+
 
 }   
