@@ -1,5 +1,6 @@
 use moontool::moon::ToJSON;
 use serde::Deserialize;
+use crate::moon_rise_set::{compute_moon_rise_set, MoonHorizonTimes};
 
 // ── Data structures (unchanged) ──────────────────────────────
 
@@ -62,6 +63,7 @@ pub struct MoonInfo {
     pub day: usize,
     pub next_state: &'static str,
     pub time_remaining: String,
+    pub moon_horison: MoonHorizonTimes,
 }
 
 // ── Formatting helpers ───────────────────────────────────────
@@ -120,6 +122,8 @@ impl MoonInfo {
             calendar_data.next_new_moon
         };
 
+        let moon_horison = compute_moon_rise_set();
+
         Self {
             phase: phase_data,
             calendar: calendar_data,
@@ -128,6 +132,7 @@ impl MoonInfo {
             day,
             next_state,
             time_remaining: format_age(target_jd - current_jd),
+            moon_horison: moon_horison,
         }
     }
 }   

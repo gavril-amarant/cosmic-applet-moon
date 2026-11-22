@@ -112,18 +112,39 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
     let p = &info.phase;
     let c = &info.calendar;
     let event_rows = build_event_rows(info);
+    let mh = &info.moon_horison;
 
     let content = cosmic::iced::widget::column![
         cosmic::iced::widget::row![
-            cosmic::widget::image(icon.clone()).width(48).height(48),
+            cosmic::widget::image(icon.clone()).width(150).height(150),
+            cosmic::widget::divider::vertical::default(),
             cosmic::iced::widget::column![
                 field_row_short("Moon Phase:", info.phase.phase.name.clone()),
                 field_row_short("Illumination:", format!("{:.1}%", info.illumination)),
                 field_row_short("Moon Age:", format_age(p.age)),
                 field_row_short(info.next_state, info.time_remaining.clone()),
             ]
-            .spacing(2),
+            // .spacing(2),
         ]
+        .spacing(8)
+        .align_y(cosmic::iced::Alignment::Center),
+        cosmic::iced::widget::rule::horizontal(2),
+
+        cosmic::iced::widget::row![
+            cosmic::iced::widget::column![
+                field_row("Moonrise Today:",format!("{}", mh.today_moonrise)),
+                field_row("Moonset Today:",format!("{}", mh.today_moonset)),    
+                field_row("Moonrise Tomorrow:",format!("{}", mh.tomorrow_moonrise)),
+                field_row("Moonset Tomorrow:",format!("{}", mh.tomorrow_moonset)), 
+            ].width(150),
+            cosmic::widget::divider::vertical::default(),
+            cosmic::iced::widget::column![
+                field_row("Sunrise Today:",format!("{}", mh.today_sunrise)),
+                field_row("Sunset Today:",format!("{}", mh.today_sunset)),    
+                field_row("Sunrise Tomorrow:",format!("{}", mh.tomorrow_sunrise)),
+                field_row("Sunset Tomorrow:",format!("{}", mh.tomorrow_sunset)), 
+            ],
+        ]        
         .spacing(8)
         .align_y(cosmic::iced::Alignment::Center),
         cosmic::iced::widget::rule::horizontal(2),
@@ -144,6 +165,7 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
             )
         ),
         cosmic::iced::widget::rule::horizontal(2),
+        field_row("Your Location:", format!("{} (from your PC timezone)", mh.city)),
         field_row("Local DateTime:", format_local(&c.utc_datetime)),
     ]
     .spacing(2)
