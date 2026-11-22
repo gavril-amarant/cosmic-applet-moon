@@ -1,6 +1,7 @@
 use cosmic::iced::widget::image::Handle;
-use crate::moon_data::{format_age, format_local, MoonInfo};
+use crate::moon_data::{format_age, format_in_tz, MoonInfo};
 use crate::moon_applet::Msg;
+use crate::moon_horizon::CityEntry;
 
 // ── Icon loading ─────────────────────────────────────────────
 
@@ -104,15 +105,63 @@ fn build_event_rows(info: &MoonInfo) -> Vec<cosmic::Element<'_, Msg>> {
 
     events
         .iter()
-        .map(|(label, dt)| field_row(*label, format_local(dt)).into())
+        .map(|(label, dt)| field_row(*label, format_in_tz(dt, &info.tz_name)).into())
         .collect()
 }
 
-pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'a, Msg> {
+fn build_city_picker<'a>(
+    open: bool,
+    search: &'a str,
+    all_cities: &'a [CityEntry],
+) -> cosmic::Element<'a, Msg> {
+    if !open {
+        return cosmic::iced::widget::Space::new().into();
+    }
+
+    let query = search.trim().to_lowercase();
+    let mut rows: Vec<cosmic::Element<'a, Msg>> = vec![
+        cosmic::widget::button::text("Auto (OS Timezone)")
+            .on_press(Msg::SelectCity(None))
+            .width(cosmic::iced::Length::Fill)
+            .into(),
+    ];
+
+    for entry in all_cities
+        .iter()
+        .filter(|c| query.is_empty() || c.display_label.to_lowercase().contains(&query))
+        .take(30)
+    {
+        rows.push(
+            cosmic::widget::button::text(&entry.display_label)
+                .on_press(Msg::SelectCity(Some(entry.tz_name.clone())))
+                .width(cosmic::iced::Length::Fill)
+                .into(),
+        );
+    }
+
+    cosmic::widget::column![
+        cosmic::widget::text_input("Search city or country...", search)
+            .on_input(Msg::CitySearchChanged),
+        cosmic::widget::scrollable(cosmic::widget::column(rows).spacing(2))
+            .height(cosmic::iced::Length::Fixed(140.0)),
+    ]
+    .spacing(4)
+    .padding([4, 0])
+    .into()
+}
+
+pub fn view_popup<'a>(
+    info: &'a MoonInfo,
+    icon: &'a Handle,
+    city_picker_open: bool,
+    city_search: &'a str,
+    all_cities: &'a [CityEntry],
+    is_manual_city: bool,
+) -> cosmic::Element<'a, Msg> {
     let p = &info.phase;
     let c = &info.calendar;
     let event_rows = build_event_rows(info);
-    let mh = &info.moon_horison;
+    let mh = &info.moon_horizon;
 
     let content = cosmic::iced::widget::column![
         cosmic::iced::widget::row![
@@ -179,8 +228,24 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
             )
         ),
         cosmic::iced::widget::rule::horizontal(2),
-        field_row("Your Location:", format!("{} (from your PC timezone settings)", mh.city)),
-        field_row("Local DateTime:", format_local(&c.utc_datetime)),
+        cosmic::widget::row![
+            cosmic::widget::text("Your Location:")
+                .width(cosmic::iced::Length::Fixed(113.0))
+                .size(10.0),
+            cosmic::widget::text(if is_manual_city {
+                mh.location_label.clone()
+            } else {
+                format!("{} (Auto)", mh.location_label)
+            })
+            .width(cosmic::iced::Length::Fill)
+            .size(10.0),
+            cosmic::widget::button::text(if city_picker_open { "Close" } else { "Change" })
+                .on_press(Msg::ToggleCityPicker),
+        ]
+        .spacing(8)
+        .align_y(cosmic::iced::Alignment::Center),
+        build_city_picker(city_picker_open, city_search, all_cities),
+        field_row("Local DateTime:", format_in_tz(&c.utc_datetime, &info.tz_name)),
     ]
     .spacing(2)
     .padding(8);

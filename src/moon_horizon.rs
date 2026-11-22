@@ -1,10 +1,15 @@
-use chrono::{DateTime, Duration, Local, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, Duration, NaiveDate, TimeZone, Utc};
+use chrono_tz::Tz;
 
 const ZONE_TAB: &str = include_str!("../assets/zone1970.tab");
+const ISO3166_TAB: &str = include_str!("../assets/iso3166.tab");
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MoonHorizonTimes {
     pub city: String,
+    pub country: String,
+    pub location_label: String,    
     pub today_moonrise: String,
     pub today_moonset: String,
     pub tomorrow_moonrise: String,
@@ -19,6 +24,8 @@ impl Default for MoonHorizonTimes {
     fn default() -> Self {
         Self {
             city: "Unknown".to_string(),
+            country: "Unknown".to_string(),
+            location_label: "Unknown".to_string(),
             today_moonrise: "—".to_string(),
             today_moonset: "—".to_string(),
             tomorrow_moonrise: "—".to_string(),
@@ -31,40 +38,106 @@ impl Default for MoonHorizonTimes {
     }
 }
 
-pub fn get_observer_coords() -> (f64, f64) {
-    iana_time_zone::get_timezone()
-        .ok()
-        .and_then(|tz| lookup_zone_coords(&tz))
-        .unwrap_or((0.0, 0.0))
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CityEntry {
+    pub tz_name: String,
+    pub city: String,
+    pub country: String,
+    pub display_label: String, // e.g. "Bucharest, Romania"
+}
+
+pub fn all_cities() -> Vec<CityEntry> {
+    let mut list: Vec<CityEntry> = ZONE_TAB
+        .lines()
+        .filter_map(|line| {
+            let line = line.trim();
+            if line.is_empty() || line.starts_with('#') {
+                return None;
+            }
+            let mut cols = line.split('\t');
+            let countries = cols.next()?;
+            let _coords = cols.next()?;
+            let tz = cols.next()?;
+
+            let primary_cc = countries.split(',').next().unwrap_or("");
+            let country = country_name(primary_cc).to_string();
+            let city = tz.split('/').last().unwrap_or(tz).replace('_', " ");
+            let display_label = format!("{}, {}", city, country);
+
+            Some(CityEntry {
+                tz_name: tz.to_string(),
+                city,
+                country,
+                display_label,
+            })
+        })
+        .collect();
+
+    list.sort_by(|a, b| a.display_label.cmp(&b.display_label));
+    list
+}
+
+pub fn country_name(code: &str) -> &str {
+    for line in ISO3166_TAB.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        // Format: CC \t Country Name
+        if let Some((cc, name)) = line.split_once('\t') {
+            if cc == code {
+                return name;
+            }
+        }
+    }
+    code
+}
+#[allow(dead_code)]
+pub fn resolve_timezone(manual_tz: Option<&str>) -> String {
+    manual_tz
+        .map(str::to_string)
+        .or_else(|| iana_time_zone::get_timezone().ok())
+        .unwrap_or_else(|| "UTC".to_string())
 }
 
 
-pub fn compute_moon_rise_set() -> MoonHorizonTimes {
-    let Ok(tz_name) = iana_time_zone::get_timezone() else {
+pub fn resolve_tz_name(manual_tz: Option<&str>) -> String {
+    manual_tz
+        .map(str::to_string)
+        .or_else(|| iana_time_zone::get_timezone().ok())
+        .unwrap_or_else(|| "UTC".to_string())
+}
+
+pub fn get_observer_coords(manual_tz: Option<&str>) -> (f64, f64) {
+    let tz_name = resolve_tz_name(manual_tz);
+    lookup_zone_coords(&tz_name).unwrap_or((0.0, 0.0))
+}
+
+pub fn compute_moon_rise_set(manual_tz: Option<&str>) -> MoonHorizonTimes {
+    let tz_name = resolve_tz_name(manual_tz);
+    let Ok(tz) = tz_name.parse::<Tz>() else {
         return MoonHorizonTimes::default();
     };
-
     let Some((lat, lon)) = lookup_zone_coords(&tz_name) else {
         return MoonHorizonTimes::default();
     };
 
-    let city = tz_name
-        .split('/')
-        .last()
-        .unwrap_or(&tz_name)
-        .replace('_', " ");
+    let city = tz_name.split('/').last().unwrap_or(&tz_name).replace('_', " ");
+    let country = lookup_country_for_tz(&tz_name);
+    let location_label = format!("{}, {}", city, country);
 
-    let today = Local::now().date_naive();
+    let today = Utc::now().with_timezone(&tz).date_naive();
     let tomorrow = today + Duration::days(1);
 
-    let (today_moonrise, today_moonset) = rise_set_for_local_date(today, lat, lon, true);
-    let (tomorrow_moonrise, tomorrow_moonset) = rise_set_for_local_date(tomorrow, lat, lon, true);
-
-    let (today_sunrise, today_sunset) = rise_set_for_local_date(today, lat, lon, false);
-    let (tomorrow_sunrise, tomorrow_sunset) = rise_set_for_local_date(tomorrow, lat, lon, false);
+    let (today_moonrise, today_moonset) = rise_set_for_local_date(today, tz, lat, lon, true);
+    let (tomorrow_moonrise, tomorrow_moonset) = rise_set_for_local_date(tomorrow, tz, lat, lon, true);
+    let (today_sunrise, today_sunset) = rise_set_for_local_date(today, tz, lat, lon, false);
+    let (tomorrow_sunrise, tomorrow_sunset) = rise_set_for_local_date(tomorrow, tz, lat, lon, false);
 
     MoonHorizonTimes {
         city,
+        country,
+        location_label,
         today_moonrise,
         today_moonset,
         tomorrow_moonrise,
@@ -76,16 +149,34 @@ pub fn compute_moon_rise_set() -> MoonHorizonTimes {
     }
 }
 
+fn lookup_country_for_tz(target_tz: &str) -> String {
+    for line in ZONE_TAB.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let mut cols = line.split('\t');
+        if let (Some(countries), Some(_coords), Some(tz)) = (cols.next(), cols.next(), cols.next()) {
+            if tz == target_tz {
+                let cc = countries.split(',').next().unwrap_or("");
+                return country_name(cc).to_string();
+            }
+        }
+    }
+    "Unknown".to_string()
+}
+
 fn rise_set_for_local_date(
     date: NaiveDate,
+    tz: Tz,
     lat_deg: f64,
     lon_deg: f64,
     is_moon: bool,
 ) -> (String, String) {
-    let start_local = Local
+    let start_local = tz
         .from_local_datetime(&date.and_hms_opt(0, 0, 0).unwrap())
         .earliest()
-        .unwrap_or_else(Local::now);
+        .unwrap_or_else(|| Utc::now().with_timezone(&tz));
 
     // Moon center at horizon: +0.125° | Sun upper limb at horizon: -0.833°
     let h0 = if is_moon { 0.125 } else { -0.833 };

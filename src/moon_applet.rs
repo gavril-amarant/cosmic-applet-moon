@@ -13,6 +13,9 @@ pub enum Msg {
     TogglePopup,
     // Surface(cosmic::surface::Action<Msg>),
     PopupClosed(Id),
+    ToggleCityPicker,
+    CitySearchChanged(String),
+    SelectCity(Option<String>),
 }
 
 const APP_ID: &str = "com.example.CosmicAppletMoon";
@@ -22,6 +25,11 @@ pub struct MoonApplet {
     pub popup: Option<Id>,
     pub info: MoonInfo,
     pub icon: cosmic::iced::widget::image::Handle,
+    pub config_handler: Option<cosmic::cosmic_config::Config>,
+    pub config: crate::config::MoonConfig,
+    pub city_picker_open: bool,
+    pub city_search: String,
+    pub all_cities: Vec<crate::moon_horizon::CityEntry>,    
 }
 
 
@@ -36,10 +44,27 @@ impl cosmic::Application for MoonApplet {
     fn core_mut(&mut self) -> &mut Core { &mut self.core }
 
     fn init(core: Core, _flags: ()) -> (Self, Task<Action<Msg>>) {
-        let info = MoonInfo::compute();
+        let (config_handler, config) = crate::config::MoonConfig::load(APP_ID);
+        let info = MoonInfo::compute(config.manual_tz.as_deref());
         let icon = get_moon_phase_image(info.day);
-        (Self { core, popup: None, info, icon }, Task::none())
+        let all_cities = crate::moon_horizon::all_cities();
+
+        (
+            Self {
+                core,
+                popup: None,
+                info,
+                icon,
+                config_handler,
+                config,
+                city_picker_open: false,
+                city_search: String::new(),
+                all_cities,
+            },
+            Task::none(),
+        )
     }
+
 
     fn view(&self) -> Element<'_, Msg> {
         self.core.applet.autosize_window(view_panel(&self.icon)).into()
@@ -48,7 +73,14 @@ impl cosmic::Application for MoonApplet {
     fn view_window(&self, id: Id) -> Element<'_, Msg> {
         if Some(id) == self.popup {
             self.core.applet
-                .popup_container(view_popup(&self.info, &self.icon))
+                .popup_container(view_popup(
+                    &self.info,
+                    &self.icon,
+                    self.city_picker_open,
+                    &self.city_search,
+                    &self.all_cities,
+                    self.config.manual_tz.is_some(),
+                ))
                 .max_width(580.0)
                 .into()
         } else {
@@ -56,12 +88,28 @@ impl cosmic::Application for MoonApplet {
         }
     }
 
+
     fn update(&mut self, msg: Msg) -> Task<Action<Msg>> {
         match msg {
             Msg::Tick => {
-                self.info = MoonInfo::compute();
+                self.info = MoonInfo::compute(self.config.manual_tz.as_deref());
                 self.icon = get_moon_phase_image(self.info.day);
             }
+            Msg::ToggleCityPicker => {
+                self.city_picker_open = !self.city_picker_open;
+                self.city_search.clear();
+            }
+            Msg::CitySearchChanged(query) => {
+                self.city_search = query;
+            }
+            Msg::SelectCity(tz_opt) => {
+                self.config.manual_tz = tz_opt;
+                self.config.save(self.config_handler.as_ref());
+                self.city_picker_open = false;
+                self.city_search.clear();
+                self.info = MoonInfo::compute(self.config.manual_tz.as_deref());
+                self.icon = get_moon_phase_image(self.info.day);
+            }            
             Msg::TogglePopup => {
 
                 if let Some(p) = self.popup.take() {

@@ -62,11 +62,12 @@ pub struct MoonInfo {
     pub day: usize,
     pub next_state: &'static str,
     pub time_remaining: String,
-    pub moon_horison: MoonHorizonTimes,
+    pub moon_horizon: MoonHorizonTimes,
     pub earths_between_moon: f64,
     pub moons_between_moon: f64,
     pub earths_between_sun: f64,
-    pub suns_between_sun: f64,    
+    pub suns_between_sun: f64, 
+    pub tz_name: String,   
 }
 
 // ── Formatting helpers ───────────────────────────────────────
@@ -86,7 +87,17 @@ pub fn format_age(days: f64) -> String {
         "now!".to_string()
     }
 }
+pub fn format_in_tz(s: &str, tz_name: &str) -> String {
+    let tz: chrono_tz::Tz = tz_name.parse().unwrap_or(chrono_tz::Tz::UTC);
+    s.parse::<DateTime<Utc>>()
+        .map(|dt| {
+            let local = dt.with_timezone(&tz);
+            format!("{} ({})", local.format("%A, %d %b %Y, %H:%M:%S"), local.format("%Z"))
+        })
+        .unwrap_or_else(|_| s.to_string())
+}
 
+#[allow(dead_code)]
 pub fn format_local(s: &str) -> String {
     s.parse::<DateTime<Utc>>()
         .map(|dt| {
@@ -103,13 +114,15 @@ pub fn format_local(s: &str) -> String {
 // ── Computation ──────────────────────────────────────────────
 
 impl MoonInfo {
-    pub fn compute() -> Self {
+    pub fn compute(manual_tz: Option<&str>) -> Self {
         const R_EARTH: f64 = 6_378.137;
         const R_MOON: f64 = 1_737.4;
         const R_SUN: f64 = 695_700.0;
 
+
         let now = Utc::now();
-        let (lat_deg, lon_deg) = get_observer_coords();
+        let tz_name = crate::moon_horizon::resolve_tz_name(manual_tz);
+        let (lat_deg, lon_deg) = get_observer_coords(manual_tz);
 
         let calendar_data = compute_calendar(now);
         let phase_data = compute_phase(now, &calendar_data, lat_deg, lon_deg);
@@ -130,7 +143,7 @@ impl MoonInfo {
             calendar_data.next_new_moon
         };
 
-        let moon_horison = compute_moon_rise_set();
+        let moon_horizon = compute_moon_rise_set(manual_tz);
 
 
         let moon_gap_km = (phase_data.distance_to_earth_km - R_EARTH - R_MOON).max(0.0);
@@ -150,11 +163,12 @@ impl MoonInfo {
             day,
             next_state,
             time_remaining: format_age(target_jd - current_jd),
-            moon_horison,
+            moon_horizon,
             earths_between_moon,
             moons_between_moon,
             earths_between_sun,
             suns_between_sun,
+            tz_name,
         }
     }
 }
