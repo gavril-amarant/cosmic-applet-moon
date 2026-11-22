@@ -1,6 +1,6 @@
 # COSMIC Moon Phase Applet
 
-A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](https://github.com) that displays the current lunar phase, illumination, upcoming moon events, and local moon/sun rise and set times.
+A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](https://system76.com/cosmic) that displays the current lunar phase, illumination, upcoming moon events, and local moon/sun rise and set times. I built this for myself since there was nothing out there free and simple to use. Enjoy.
 
 <p align="center">
   <img src="assets/screenshots/moon_icon.png" alt="Moon Phase in the top panel dec" width="620">
@@ -17,7 +17,7 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 
 ## Features
 
-- **Live Panel Icon:** Displays the current day of the lunar cycle (`1–29`) directly in your COSMIC panel.
+- **Live Panel Icon:** Displays the current day of the lunar cycle (`1–29`) directly in your COSMIC panel/dock.
 - **High-Precision Ephemeris Math:** Built-in pure-Rust implementation of Jean Meeus's *Astronomical Algorithms*—no external web APIs or internet connection required.
 - **Moon Phase & Illumination:** Shows current phase name, illumination percentage, lunar age, and countdown to the next Full Moon or New Moon.
 - **Today & Tomorrow Horizon Times:** Calculates local moonrise, moonset, sunrise, and sunset times for both today and tomorrow.
@@ -53,14 +53,14 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
   <img src="assets/screenshots/settings5.png" alt="Installation done" width="620">
 </p>
 
-### Uninstalling
+## Uninstalling
 
 ```bash
 sudo apt remove cosmic-applet-moon
 ```
 
 ---
-
+# For Developers:
 ## Building from Source (Other Linux Distributions)
 
 For Fedora, Arch Linux, or other distributions using COSMIC:
