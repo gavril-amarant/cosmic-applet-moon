@@ -513,7 +513,8 @@ fn compute_phase(
     let age = (jd - cal.last_new_moon).max(0.0);
     let lunation_len = (cal.next_new_moon - cal.last_new_moon).max(1.0);
     let fraction_of_lunation = (age / lunation_len).clamp(0.0, 1.0);
-    let phase = classify_phase(fraction_of_lunation);
+    let phase = classify_phase(fraction_of_lunation, fraction_illuminated);
+
 
     MoonPhaseData {
         julian_date: jd,
@@ -535,21 +536,30 @@ fn compute_phase(
         sun_subtends,
     }
 }
-fn classify_phase(frac: f64) -> PhaseInfo {
-    let idx = ((frac * 8.0).round() as u8) % 8;
-    let (name, icon) = match idx {
-        0 => ("New Moon", "🌑"),
-        1 => ("Waxing Crescent", "🌒"),
-        2 => ("First Quarter", "🌓"),
-        3 => ("Waxing Gibbous", "🌔"),
-        4 => ("Full Moon", "🌕"),
-        5 => ("Waning Gibbous", "🌖"),
-        6 => ("Last Quarter", "🌗"),
-        _ => ("Waning Crescent", "🌘"),
+fn classify_phase(frac: f64, illum: f64) -> PhaseInfo {
+    // Primary phases only trigger right around the exact quarter/new/full peaks
+    let (idx, name, icon) = if illum <= 0.015 || frac < 0.015 || frac > 0.985 {
+        (0, "New Moon", "🌑")
+    } else if (frac - 0.25).abs() <= 0.015 {
+        (2, "First Quarter", "🌓")
+    } else if illum >= 0.985 || (frac - 0.50).abs() <= 0.015 {
+        (4, "Full Moon", "🌕")
+    } else if (frac - 0.75).abs() <= 0.015 {
+        (6, "Last Quarter", "🌗")
+    } else if frac < 0.25 {
+        (1, "Waxing Crescent", "🌒")
+    } else if frac < 0.50 {
+        (3, "Waxing Gibbous", "🌔")
+    } else if frac < 0.75 {
+        (5, "Waning Gibbous", "🌖")
+    } else {
+        (7, "Waning Crescent", "🌘")
     };
+
     PhaseInfo {
         index: idx,
         name: name.to_string(),
         icon: icon.to_string(),
     }
 }
+

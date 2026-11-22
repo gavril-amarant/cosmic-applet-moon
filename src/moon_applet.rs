@@ -63,6 +63,7 @@ impl cosmic::Application for MoonApplet {
                 self.icon = get_moon_phase_image(self.info.day);
             }
             Msg::TogglePopup => {
+
                 if let Some(p) = self.popup.take() {
                     return cosmic::surface::surface_task(destroy_popup(p));
                 }
@@ -111,6 +112,6 @@ impl cosmic::Application for MoonApplet {
     fn on_close_requested(&self, id: Id) -> Option<Msg> {
         Some(Msg::PopupClosed(id))
     }
-
-
+    
 }   
+

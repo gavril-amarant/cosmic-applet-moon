@@ -4,7 +4,7 @@
     {
       "type": "shell",
       "label": "Deploy Applet to COSMIC Panel",
-      "command": "cargo build --release && install -D target/release/cosmic-applet-moon ~/.local/bin/cosmic-applet-moon && pkill -f cosmic-panel",
+      "command": "cargo build --release && install -D target/release/cosmic-applet-moon ~/.local/bin/cosmic-applet-moon && (pkill -x cosmic-panel || true) && sleep 0.5 && systemd-run --user --collect cosmic-panel",
       "options": {
         "env": {
           "PATH": "~/.cargo/bin:${env:PATH}"

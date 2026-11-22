@@ -119,12 +119,23 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
             cosmic::widget::image(icon.clone()).width(150).height(150),
             cosmic::widget::divider::vertical::default(),
             cosmic::iced::widget::column![
-                field_row_short("Moon Phase:", info.phase.phase.name.clone()),
+                cosmic::widget::text(info.phase.phase.name.clone())
+                    .width(cosmic::iced::Length::Fill)
+                    .align_x(cosmic::iced::Alignment::Center)
+                    .size(20.0),
+                cosmic::widget::text(" ")
+                    .width(cosmic::iced::Length::Fill)
+                    .align_x(cosmic::iced::Alignment::Center)
+                    .size(20.0),                    
+                cosmic::iced::widget::rule::horizontal(2),
+                cosmic::widget::text(" ")
+                    .width(cosmic::iced::Length::Fill)
+                    .align_x(cosmic::iced::Alignment::Center)
+                    .size(10.0),                  
                 field_row_short("Illumination:", format!("{:.1}%", info.illumination)),
                 field_row_short("Moon Age:", format_age(p.age)),
                 field_row_short(info.next_state, info.time_remaining.clone()),
             ]
-            // .spacing(2),
         ]
         .spacing(8)
         .align_y(cosmic::iced::Alignment::Center),
@@ -153,22 +164,22 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
         field_row(
             "Earth-Moon Distance:",
             format!(
-                "{:.0} km, {:.1} Earths, {:.1} Moons",
-                p.distance_to_earth_km, 
+                "{:.1} Moons | {:.1} Earths | {:.0} km",
+                &info.moons_between_moon, 
                 &info.earths_between_moon,
-                &info.moons_between_moon,
+                p.distance_to_earth_km,
             )
         ),
         field_row(
             "Earth-Sun Distance:",
             format!(
-                "{:.0} km, {:.2} au, {:.1} Earths, {:.1} Suns",
-                p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units,
-                &info.earths_between_sun, &info.suns_between_sun
+                "{:.1} Suns | {:.1} Earths | {:.0} km",
+                &info.suns_between_sun, 
+                &info.earths_between_sun, p.sun_distance_to_earth_km 
             )
         ),
         cosmic::iced::widget::rule::horizontal(2),
-        field_row("Your Location:", format!("{} (from your PC timezone)", mh.city)),
+        field_row("Your Location:", format!("{} (from your PC timezone settings)", mh.city)),
         field_row("Local DateTime:", format_local(&c.utc_datetime)),
     ]
     .spacing(2)
