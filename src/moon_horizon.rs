@@ -31,6 +31,14 @@ impl Default for MoonHorizonTimes {
     }
 }
 
+pub fn get_observer_coords() -> (f64, f64) {
+    iana_time_zone::get_timezone()
+        .ok()
+        .and_then(|tz| lookup_zone_coords(&tz))
+        .unwrap_or((0.0, 0.0))
+}
+
+
 pub fn compute_moon_rise_set() -> MoonHorizonTimes {
     let Ok(tz_name) = iana_time_zone::get_timezone() else {
         return MoonHorizonTimes::default();

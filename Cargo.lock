@@ -912,9 +912,7 @@ dependencies = [
  "chrono",
  "iana-time-zone",
  "libcosmic",
- "moontool",
  "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -3185,15 +3183,6 @@ dependencies = [
  "log",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "moontool"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e1b4181f64d1657c3f5265c19cceaf6a4ae6f1f76a0c576eb455c0f39fb3473"
-dependencies = [
- "jiff",
 ]
 
 [[package]]

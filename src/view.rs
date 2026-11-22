@@ -153,15 +153,18 @@ pub fn view_popup<'a>(info: &'a MoonInfo, icon: &'a Handle) -> cosmic::Element<'
         field_row(
             "Earth-Moon Distance:",
             format!(
-                "{:.0} km, {:.1} Earth Radii",
-                p.distance_to_earth_km, p.distance_to_earth_earth_radii
+                "{:.0} km, {:.1} Earths, {:.1} Moons",
+                p.distance_to_earth_km, 
+                &info.earths_between_moon,
+                &info.moons_between_moon,
             )
         ),
         field_row(
             "Earth-Sun Distance:",
             format!(
-                "{:.0} km, {:.2} au",
-                p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units
+                "{:.0} km, {:.2} au, {:.1} Earths, {:.1} Suns",
+                p.sun_distance_to_earth_km, p.sun_distance_to_earth_astronomical_units,
+                &info.earths_between_sun, &info.suns_between_sun
             )
         ),
         cosmic::iced::widget::rule::horizontal(2),
