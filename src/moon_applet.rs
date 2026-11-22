@@ -94,6 +94,7 @@ impl cosmic::Application for MoonApplet {
             Msg::Tick => {
                 self.info = MoonInfo::compute(self.config.manual_tz.as_deref());
                 self.icon = get_moon_phase_image(self.info.day);
+                self.check_moon_notifications();
             }
             Msg::ToggleCityPicker => {
                 self.city_picker_open = !self.city_picker_open;
@@ -163,3 +164,41 @@ impl cosmic::Application for MoonApplet {
     
 }   
 
+impl MoonApplet {
+    fn check_moon_notifications(&mut self) {
+        let now_jd = self.info.calendar.julian_date;
+        let c = &self.info.calendar;
+
+        let candidates = [
+            ("Full Moon", c.full_moon, &c.full_moon_utc),
+            ("New Moon", c.next_new_moon, &c.next_new_moon_utc),
+        ];
+
+        for (label, target_jd, utc_str) in candidates {
+            let hours_until = (target_jd - now_jd) * 24.0;
+
+            // Trigger once when the event is between 0 and 24 hours away
+            if hours_until > 0.0 && hours_until <= 24.0 {
+                let event_key = format!("{}:{}", label, utc_str);
+
+                if self.config.last_notified_event.as_deref() != Some(&event_key) {
+                    let local_time = crate::moon_data::format_in_tz(utc_str, &self.info.tz_name);
+                    let body = format!(
+                        "{} occurs in ~{:.0} hours ({}).",
+                        label,
+                        hours_until.round(),
+                        local_time
+                    );
+
+                    let _ = notify_rust::Notification::new()
+                        .summary(&format!("Upcoming {}", label))
+                        .body(&body)
+                        .appname("Cosmic Moon Applet")
+                        .show();
+
+                    self.config.set_notified(self.config_handler.as_ref(), event_key);
+                }
+            }
+        }
+    }
+}

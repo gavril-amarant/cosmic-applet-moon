@@ -8,6 +8,8 @@ pub const CONFIG_VERSION: u64 = 1;
 pub struct MoonConfig {
     /// `None` = automatic OS timezone detection; `Some("Europe/Bucharest")` = manual override.
     pub manual_tz: Option<String>,
+        /// Stores e.g. `"Full Moon:2026-11-24T14:53:00+00:00"` so each event only notifies once.
+    pub last_notified_event: Option<String>,
 }
 
 impl MoonConfig {
@@ -24,6 +26,14 @@ impl MoonConfig {
             Err(_) => (None, MoonConfig::default()),
         }
     }
+
+    pub fn set_notified(&mut self, handler: Option<&Config>, event_key: String) {
+        self.last_notified_event = Some(event_key.clone());
+        if let Some(h) = handler {
+            let _ = self.set_last_notified_event(h, Some(event_key));
+        }
+    }
+
 
     /// Persists the updated `manual_tz` value to disk.
     pub fn save(&mut self, handler: Option<&Config>) {
