@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (leave empty to auto-increment build number on v1.0)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -14,6 +20,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Determine release version
+        id: meta
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            DEB_VER="${TAG#v}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            DEB_VER="${{ github.event.inputs.version }}"
+            TAG="v${DEB_VER}"
+          else
+            DEB_VER="1.0.${{ github.run_number }}"
+            TAG="v${DEB_VER}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "deb_ver=${DEB_VER}" >> "$GITHUB_OUTPUT"
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -22,16 +44,19 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
       - name: Install cargo-deb
         run: cargo install cargo-deb
 
       - name: Build .deb package
         run: |
-          cargo deb
+          cargo deb --deb-version "${{ steps.meta.outputs.deb_ver }}"
           cp target/debian/cosmic-applet-moon_*_amd64.deb target/debian/cosmic-applet-moon_amd64.deb
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: target/debian/cosmic-applet-moon_amd64.deb
-
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: target/debian/*.deb
