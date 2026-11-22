@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Moon Phase & Sun Times
+Comment=Display current moon phase, illumination, and local moon/sun rise and set times
+Type=Application
+Exec=cosmic-applet-moon
+Icon=io.github.gavril_amarant.CosmicAppletMoon
+Terminal=false
+Categories=COSMIC;Utility;Astronomy;
+Keywords=COSMIC;Moon;Sun;Phase;Astronomy;Lunar;
+NoDisplay=true
+X-CosmicApplet=true
+X-CosmicHoverPopup=Auto

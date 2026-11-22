@@ -1,0 +1,21 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lockfile (optional: keep Cargo.lock committed for binary applications)
+# Cargo.lock
+
+# Debian packaging output
+*.deb
+*.changes
+*.buildinfo
+
+# Editor & OS files
+.vscode/*
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

@@ -1,7 +1,7 @@
 [package]
 name = "cosmic-applet-moon"
 version = "1.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false, features = ["applet", "tokio", "wayland"] }
@@ -11,6 +11,21 @@ iana-time-zone = "0.1"
 chrono-tz = "0.10"
 zbus = { version = "6.2", default-features = false, features = ["tokio"] }
 
+[package.metadata.deb]
+maintainer = "Gavril Amarant <your-email@example.com>"
+copyright = "2026, Gavril Amarant"
+license-file = ["LICENSE", "0"]
+extended-description = """\
+A lightweight, 100% offline panel applet for the COSMIC Desktop Environment \
+that displays lunar phases, illumination, and local moon/sun rise and set times."""
+section = "utils"
+priority = "optional"
+depends = "$auto"
+assets = [
+    ["target/release/cosmic-applet-moon", "usr/bin/", "755"],
+    ["assets/io.github.ginger-beard.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
+    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.ginger-beard.CosmicAppletMoon.png", "644"],
+]
 
 
 
