@@ -270,7 +270,7 @@ async fn send_desktop_notification(summary: String, body: String) {
             &(
                 "Cosmic Moon Applet",
                 0u32,
-                "weather-clear-night",
+                APP_ID, // notification icon
                 summary.as_str(),
                 body.as_str(),
                 empty_actions,

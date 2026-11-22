@@ -23,8 +23,8 @@ priority = "optional"
 depends = "$auto"
 assets = [
     ["target/release/cosmic-applet-moon", "usr/bin/", "755"],
-    ["assets/io.github.ginger-beard.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
-    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.ginger-beard.CosmicAppletMoon.png", "644"],
+    ["assets/io.github.gavril_amarant.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
+    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.gavril_amarant.CosmicAppletMoon.png", "644"],
 ]
 
 

@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Moon Phase & Sun Times
+Name=Moon Phase
 Comment=Display current moon phase, illumination, and local moon/sun rise and set times
 Type=Application
 Exec=cosmic-applet-moon
