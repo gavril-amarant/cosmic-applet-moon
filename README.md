@@ -1,4 +1,4 @@
-# COSMIC Moon Phase Applet
+# Moon Phase (for COSMIC Desktop Environment)
 
 A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](https://system76.com/cosmic) that displays the current lunar phase, illumination, upcoming moon events, and local moon/sun rise and set times. I built this for myself since there was nothing out there free and simple to use. Enjoy.
 
