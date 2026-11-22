@@ -237,10 +237,16 @@ pub fn view_popup<'a>(
             } else {
                 format!("{} (Auto)", mh.location_label)
             })
-            .width(cosmic::iced::Length::Fill)
+            // .width(cosmic::iced::Length::Fill)
             .size(10.0),
-            cosmic::widget::button::text(if city_picker_open { "Close" } else { "Change" })
-                .on_press(Msg::ToggleCityPicker),
+            cosmic::widget::button::custom(
+                cosmic::widget::text(if city_picker_open { "(Close Location)" } else { "(Change Location)" })
+                    .size(10.0)
+                    .font(cosmic::font::bold())
+            )
+            .class(cosmic::theme::Button::Link)
+            .padding(0)
+            .on_press(Msg::ToggleCityPicker),
         ]
         .spacing(8)
         .align_y(cosmic::iced::Alignment::Center),
