@@ -9,6 +9,8 @@ chrono = "0.4"
 serde = "1.0.229"
 iana-time-zone = "0.1"
 chrono-tz = "0.10"
-notify-rust = "4"
+zbus = { version = "6.2", default-features = false, features = ["tokio"] }
+
+
 
 

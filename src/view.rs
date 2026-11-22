@@ -157,11 +157,23 @@ pub fn view_popup<'a>(
     city_search: &'a str,
     all_cities: &'a [CityEntry],
     is_manual_city: bool,
+    notifications_enabled: bool,
+    notify_days: u32,
+    notify_hours: u32,
 ) -> cosmic::Element<'a, Msg> {
+
     let p = &info.phase;
     let c = &info.calendar;
     let event_rows = build_event_rows(info);
     let mh = &info.moon_horizon;
+
+    let day_options: Vec<String> = (0..=14)
+        .map(|d| if d == 1 { "1 day".to_string() } else { format!("{} days", d) })
+        .collect();
+    let hour_options: Vec<String> = (0..=24)
+        .map(|h| if h == 1 { "1 hr".to_string() } else { format!("{} hrs", h) })
+        .collect();
+
 
     let content = cosmic::iced::widget::column![
         cosmic::iced::widget::row![
@@ -252,6 +264,25 @@ pub fn view_popup<'a>(
         .align_y(cosmic::iced::Alignment::Center),
         build_city_picker(city_picker_open, city_search, all_cities),
         field_row("Local DateTime:", format_in_tz(&c.utc_datetime, &info.tz_name)),
+        cosmic::iced::widget::rule::horizontal(2),
+        cosmic::widget::row![
+            cosmic::widget::checkbox(notifications_enabled)
+                .on_toggle(Msg::ToggleNotifications),
+            cosmic::widget::text("Notify me of New/Full Moon before:")
+                .size(10.0),
+            cosmic::widget::dropdown(
+                day_options,
+                Some((notify_days as usize).min(14)),
+                Msg::SelectNotifyDays,
+            ),
+            cosmic::widget::dropdown(
+                hour_options,
+                Some((notify_hours as usize).min(24)),
+                Msg::SelectNotifyHours,
+            ),
+        ]
+        .spacing(6)
+        .align_y(cosmic::iced::Alignment::Center),
     ]
     .spacing(2)
     .padding(8);
