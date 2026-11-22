@@ -2,9 +2,18 @@
 
 A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](https://github.com) that displays the current lunar phase, illumination, upcoming moon events, and local moon/sun rise and set times.
 
-![COSMIC Desktop](https://shields.io)
-![Rust](https://shields.io)
-![Offline](https://shields.io)
+<p align="center">
+  <img src="assets/screenshots/moon_icon.png" alt="Moon Phase in the top panel dec" width="620">
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/moon_info.png" alt="Moon Phase popup info" width="620">
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/notification.png" alt="Moon Phase notification" width="620">
+</p>
+
 
 ## Features
 
@@ -24,9 +33,25 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
    sudo apt install ./cosmic-applet-moon_*_amd64.deb
    ```
 3. Open **COSMIC Settings** → **Desktop** → **Panel** (or **Dock**).
-4. Scroll down to the **Applets** section and click **Configure panel applets** (or **Add applet**).
-5. Select **Moon Phase** from the list and place it in your preferred panel section (Left, Center, or Right).
-6. Click the moon icon in your panel to view details, change your city, or configure New/Full Moon notifications.
+<p align="center">
+  <img src="assets/screenshots/settings1.png" alt="Moon Phase notification" width="620">
+</p>
+
+4. Scroll down and click <b>Configure panel applets</b> (or <b>Add applet</b>).
+<p align="center">
+  <img src="assets/screenshots/settings2.png" alt="Moon Phase notification" width="620">
+</p>
+<p align="center">
+  <img src="assets/screenshots/settings3.png" alt="Moon Phase notification" width="620">
+</p>
+5. Select <b>Moon Phase</b> from the list and place it in your preferred panel section (Left, Center, or Right).
+<p align="center">
+  <img src="assets/screenshots/settings4.png" alt="Moon Phase notification" width="620">
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/settings5.png" alt="Installation done" width="620">
+</p>
 
 ### Uninstalling
 
