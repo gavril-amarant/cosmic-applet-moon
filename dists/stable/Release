@@ -5,20 +5,20 @@ Codename: stable
 Architectures: amd64
 Components: main
 Description: APT Repository for COSMIC Moon Phase & Sun Times Applet
-Date: Mon, 23 Nov 2026 11:09:29 +0000
+Date: Mon, 23 Nov 2026 11:51:30 +0000
 MD5Sum:
- 94a808388854c6887070accf7bd78720              229 Release
+ 3f16c119b0e490250fbc01bfae0fe45b              229 Release
  af1f5f9c2e3d82ed7656408b2b92acd8              745 main/binary-amd64/Packages
- 3b0ce2dfe80124932ad7bd2920d16976              526 main/binary-amd64/Packages.gz
+ e065c924a16099a5416994add65548da              526 main/binary-amd64/Packages.gz
 SHA1:
- 08b21dcdaaf45f67d0bacdc1af69aa7cbd17b338              229 Release
+ 6a1f641546dccde2a8e1e2677980886ce397ea5d              229 Release
  126a779cd976996110f3bd190e84c10e4fb6b750              745 main/binary-amd64/Packages
- 0a248823932dcc89ef7c3ae34450ef6334800256              526 main/binary-amd64/Packages.gz
+ 8531f965fb398d48518332252fae17265b295eb1              526 main/binary-amd64/Packages.gz
 SHA256:
- f40a516f52fc99f7599cca73de5f007529393bc7093926845866bcd9fd3ebe37              229 Release
+ 5c639e0235e8b294e25616302b8252385939916567288262394c0a3462b660b5              229 Release
  4936163be353e2e559ee948ee117d6b335b72378879dbaa929441440ba067c3c              745 main/binary-amd64/Packages
- 39cd5ec9b165540e37ad9fc3a72e9116030eb48340d43fae263465cf768d5091              526 main/binary-amd64/Packages.gz
+ 0b023378540b2d6b1d46f16f6833cc622d0a9c9c5d837802d0e8870ae2659f19              526 main/binary-amd64/Packages.gz
 SHA512:
- e9e8378c2bf7c195437752ac2dc11dca294d0cd6db5874aa70fd3ad336b92f9b8ff781f364851718240e6ad5b1844689e88fcfdff4138ae6ed80284efc9003ea              229 Release
+ 41074e8ea8f35c8e92a4414f92a237286e85575bbee98d3d35e8be3106cb8478883f6b52589639ada3b9c09e81c07cc87fd0725e1fbdf0a8fb62e192270a5dd4              229 Release
  cc281ad4f01948f8e099e9b6abaa42ffae6ba7c1efafa106aad9b7a0274ac322d452d25060bb03d7d8ab816fbb2b68dee29df137f6db34b34486fdb01148dc72              745 main/binary-amd64/Packages
- 5db2b3f1e05778fd86afe7a66cfef6212a65ddad4dab21ac8cc59ebca7ef1caa6e02cb3491a9f6a81b3e7fa66198976f54e07ea2563a6dbce499e85e011d1c95              526 main/binary-amd64/Packages.gz
+ 504b11c94a73555a890d37454b051c09b2b7866fbb1569ecccebcc98945f6640209f2ba4dc39d875236a4adfed057512e4ba9bd661e774165bd520bbc4525c09              526 main/binary-amd64/Packages.gz
