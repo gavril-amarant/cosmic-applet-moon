@@ -80,19 +80,20 @@ jobs:
           gpg --armor --export "$GPG_KEY_ID" > apt-repo/public.gpg
 
           # Extract .deb contents so appstreamcli can compose COSMIC Store icons & metadata
+          # Extract .deb contents so appstreamcli can compose COSMIC Store YAML catalog & icons
           dpkg-deb -x apt-repo/pool/main/*.deb pkg-extract/
           appstreamcli compose \
+            --format=yaml \
             --origin=cosmic-applet-moon \
             --components=io.github.gavril.amarant.CosmicAppletMoon \
             --result-root=apt-repo/dists/stable/main/dep11 \
-            pkg-extract/ || true
+            pkg-extract/
 
-          # Rename appstreamcli output into standard Debian/Ubuntu dep11 paths if generated
-          if [ -d apt-repo/dists/stable/main/dep11/catalog ]; then
-            cp -f apt-repo/dists/stable/main/dep11/catalog/*.xml.gz apt-repo/dists/stable/main/dep11/Components-amd64.xml.gz 2>/dev/null || true
-            cp -f apt-repo/dists/stable/main/dep11/catalog/*.tar.gz apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz 2>/dev/null || true
-            rm -rf apt-repo/dists/stable/main/dep11/catalog
-          fi
+          # Move generated YAML catalog and icon tarball into standard Ubuntu/Pop!_OS dep11 paths
+          find apt-repo/dists/stable/main/dep11 -name "*.yml.gz" -exec cp -f {} apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz \;
+          find apt-repo/dists/stable/main/dep11 -name "*128x128*.tar.gz" -exec cp -f {} apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz \;
+          rm -rf apt-repo/dists/stable/main/dep11/catalog
+
 
           # Generate Packages & Packages.gz
           cd apt-repo
