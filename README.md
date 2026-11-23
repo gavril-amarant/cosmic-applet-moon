@@ -1,5 +1,18 @@
 # Moon Phase (for COSMIC Desktop Environment)
 
+## Contents
+- [Features](#features)
+- [Installation (Pop!_OS / Ubuntu / Debian)](#installation-pop_os--ubuntu--debian)
+  - [Step 1. Download and install the applet](#step-1-download-and-install-the-applet)
+  - [Step 2. Show the applet in your Panel or Dock](#step-2-show-the-applet-in-your-panel-or-dock)
+- [Uninstalling](#uninstalling)
+- [For Developers](#for-developers)
+  - [Building from Source](#building-from-source)
+    - [Dependencies](#dependencies)
+    - [Build & Install](#build--install)
+    - [Building a `.deb` Package Locally (Debian / Ubuntu / Pop!_OS)](#building-a-deb-package-locally-debian--ubuntu--pop_os)
+
+
 A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](https://system76.com/cosmic) that displays the current lunar phase, illumination, upcoming moon events, and local moon/sun rise and set times. I built this for myself since there was nothing out there free and simple to use. Enjoy.
 
 <p align="center">
@@ -17,34 +30,36 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 
 ## Features
 
-- **Live Panel Icon:** Displays the current day of the lunar cycle (`1–29`) directly in your COSMIC panel/dock.
-- **High-Precision Ephemeris Math:** Built-in pure-Rust implementation of Jean Meeus's *Astronomical Algorithms*—no external web APIs or internet connection required.
+- **Live Panel Icon:** Displays real-time moon phase directly in your panel/dock.
+- **Desktop Notifications:** Reminds you before Full and New moons using system notifications configurable from `1 hour` up to `14 days` in advance.
 - **Moon Phase & Illumination:** Shows current phase name, illumination percentage, lunar age, and countdown to the next Full Moon or New Moon.
 - **Today & Tomorrow Horizon Times:** Calculates local moonrise, moonset, sunrise, and sunset times for both today and tomorrow.
 - **Intuitive Distance Metrics:** Displays Earth–Moon and Earth–Sun distances in kilometers as well as how many Moons, Earths, or Suns fit in the gap between them.
 - **Automatic or Manual Location:** Automatically detects your OS timezone and coordinates from bundled IANA timezone data (`zone1970.tab` & `iso3166.tab`), or lets you search and select any city worldwide in its own local timezone.
-- **Desktop Notifications:** Optional native COSMIC desktop notifications ahead of upcoming New and Full Moons, configurable from `1 hour` up to `14 days` in advance.
 
 ## Installation (Pop!_OS / Ubuntu / Debian)
-
-1. Download the latest `.deb` package from here [cosmic-applet-moon_amd64.deb](https://github.com/gavril-amarant/cosmic-applet-moon/releases/latest/download/cosmic-applet-moon_amd64.deb) or choose an older version from [Releases](https://github.com/gavril-amarant/cosmic-applet-moon/releases) page.
-2. Double-click on the downloaded file cosmic-applet-moon_amd64.deb and click Install. Or, if you prefer from terminal, install it like this:
+### Step 1. Download and install the applet
+1. Download **[cosmic-applet-moon_amd64.deb](https://github.com/gavril-amarant/cosmic-applet-moon/releases/latest/download/cosmic-applet-moon_amd64.deb)**.
+2. Double-click the downloaded file and click **Install**. 
+Or open the **terminal** and execute:
    ```bash
-   sudo apt install --reinstall ./cosmic-applet-moon_*_amd64.deb
+   sudo apt install --reinstall ~/Downloads/cosmic-applet-moon_amd64.deb
    ```
-3. Open **COSMIC Settings** → **Desktop** → **Panel** (or **Dock**).
+
+### Step 2. Show the applet in your Panel or Dock
+1. Open **COSMIC Settings** → **Desktop** → **Panel** (or **Dock**).
 <p align="center">
   <img src="assets/screenshots/settings1.png" alt="Moon Phase notification" width="620">
 </p>
 
-4. Scroll down and click <b>Configure panel applets</b> (or <b>Add applet</b>).
+2. Scroll down and click <b>Configure panel applets</b> (or <b>Add applet</b>).
 <p align="center">
   <img src="assets/screenshots/settings2.png" alt="Moon Phase notification" width="620">
 </p>
 <p align="center">
   <img src="assets/screenshots/settings3.png" alt="Moon Phase notification" width="620">
 </p>
-5. Select <b>Moon Phase</b> from the list and place it in your preferred panel section (Left, Center, or Right).
+3. Select <b>Moon Phase</b> from the list and place it in your preferred panel section (Left, Center, or Right).
 <p align="center">
   <img src="assets/screenshots/settings4.png" alt="Moon Phase notification" width="620">
 </p>
@@ -54,11 +69,12 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 </p>
 
 ## Uninstalling
-
+Open **terminal** and execute: 
 ```bash
 sudo apt remove cosmic-applet-moon
 ```
 Note: if the applet is running, it will still be there until you restart/relogin or remove it by hand from settings.
+
 ---
 # For Developers
 
