@@ -5,24 +5,32 @@ Codename: stable
 Architectures: amd64
 Components: main
 Description: APT Repository for COSMIC Moon Phase & Sun Times Applet
-Date: Mon, 23 Nov 2026 12:19:48 +0000
+Date: Mon, 23 Nov 2026 12:33:37 +0000
 MD5Sum:
- 1caacfab3477bfbb4237f62305416e57              229 Release
+ 929a1e4e0b70dc3f6f78aec9798f5151              229 Release
  af1f5f9c2e3d82ed7656408b2b92acd8              745 main/binary-amd64/Packages
- 8687e2677435c1b9a65b3499c217cc8e              526 main/binary-amd64/Packages.gz
- 85ffc2e8a3a539312f91957782322cb2            18780 main/dep11/icons-128x128.tar.gz
+ f28ce48fec906b4aa501ff76017ebd5f              526 main/binary-amd64/Packages.gz
+ 81fcd0b82a45545ee587d41329be1a23              551 main/dep11/Components-amd64.yml.gz
+ 5b233f817fa189f1dd983e1fdf43190c              323 main/dep11/icons-128x128.tar.gz
+ 715012fad29bec936d3fe1603be10982              301 main/dep11/icons-64x64.tar.gz
 SHA1:
- 8d4e4de079eb5f28e42f7e3faa481f4ebb8f2d2e              229 Release
+ b04ad8a466e208880f24e63f103797e53df1d223              229 Release
  126a779cd976996110f3bd190e84c10e4fb6b750              745 main/binary-amd64/Packages
- 18553c9b0acb627c8bd7fb1fc24f44e46bdff1b7              526 main/binary-amd64/Packages.gz
- a5a54207778b2f66030bf2810c6d65aa2759a246            18780 main/dep11/icons-128x128.tar.gz
+ 731b159a0474c2182fd7ac13f702263f9c55e09c              526 main/binary-amd64/Packages.gz
+ 8d91e16c03941f16dd4e31a5c6496871e522167d              551 main/dep11/Components-amd64.yml.gz
+ 43c70a4767af0b03fbf8ff120ae9768c4548ddd7              323 main/dep11/icons-128x128.tar.gz
+ 138ff539f1178a3b9cc3fe27b793f9adddce44ef              301 main/dep11/icons-64x64.tar.gz
 SHA256:
- 0400f5715371553ba4affce78885edeb0330ace196a3e9890ed782840c4098b3              229 Release
+ c05cce6c7c0e7e18accafd90d5c9dffc9b2dac378a554ca02458d8fe5535dd62              229 Release
  4936163be353e2e559ee948ee117d6b335b72378879dbaa929441440ba067c3c              745 main/binary-amd64/Packages
- e699ec54865b802ff8caa5675981c04bc5e741740598f1675c9dbab884767bef              526 main/binary-amd64/Packages.gz
- 42c5ead73f2b13810abbb7f71af86c966d026c97c0939e49b58121ed69f2fa23            18780 main/dep11/icons-128x128.tar.gz
+ b294b574fb3c6814bd58aeaf7a39421616ff33d26a3b12aa88c9ff01db3190b5              526 main/binary-amd64/Packages.gz
+ 1ecacc1305fc68033993d75f0c8e9e0fefe1142f7b9c5e9acbcd65f091b319ae              551 main/dep11/Components-amd64.yml.gz
+ 922f289f3a5c8cd97913bc4f6d188dcf89b29840210c42ce1ab32180cca93969              323 main/dep11/icons-128x128.tar.gz
+ 6fd8657fe5776ae297ea059837ab84d60a75ad169862caf17f131799112ce968              301 main/dep11/icons-64x64.tar.gz
 SHA512:
- df7e070ae5772670f271f566a6c3900b5f3efeecda2ae41ff05f43fdbf64419989306efb538b641433cbf73b35aebaa3744657cad3022ffa408fc0ed7b16df51              229 Release
+ 92e0fb2ac9f082dab3e02b6cee92a63ae58a89d82801d9747794ef083517b0f63f76032c42752942a9a940aa3e190e07664a16419aed1a7bb4fa4ea0521d3b13              229 Release
  cc281ad4f01948f8e099e9b6abaa42ffae6ba7c1efafa106aad9b7a0274ac322d452d25060bb03d7d8ab816fbb2b68dee29df137f6db34b34486fdb01148dc72              745 main/binary-amd64/Packages
- 463269a4d5b7eba9c8c0449906aec7ac3556b41fd83ab381ea506b3b9d15f1e42ab4222ef24c95457171f838199c01b6e645cebcef9f4bc88f7d3c39dc350fe3              526 main/binary-amd64/Packages.gz
- 3040ff048db1b886f6f9a955c55b1e89aa6b53d1a952c71b334db4706b9ee5a9947275f5e65c09d33d058a9a9c90f4e5eba056c882712ec6e69b4a7877056592            18780 main/dep11/icons-128x128.tar.gz
+ 3d1ffb03f73e89dccf963a318e6c8b5bc407fa4f581a673c8d1e2be72a93969f39edbfdce56477f7367262ce10de8617546dcd7b24584b95838713aa5b6a4e5d              526 main/binary-amd64/Packages.gz
+ 24ba8cc11d382925b59f778a1ae4a8b0fa47fa5c1d32e25bbb18adcf1cc38565f4e9072eda10b3eca8ee4abe259c7916ba3ec31b556373e5f665db38f5dd9020              551 main/dep11/Components-amd64.yml.gz
+ 0adcb713529d409180fdd8ec2a383e6c333268946a01dab3bf497e94b73aff2a908b7530d1fb9615d4070a9ceec16a5489b04ad9625797e4c36b2fe4dde90119              323 main/dep11/icons-128x128.tar.gz
+ d8fd1c50d46c25beb89238b681fe33b9b566dfbe2864cb5f381e268fd2722c3d723bd21e8ad3d0c40fbd6bb157f4e67cc1bdb0f9f7ee16d4d9e02b48405b25c3              301 main/dep11/icons-64x64.tar.gz
