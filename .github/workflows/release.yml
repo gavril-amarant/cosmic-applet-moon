@@ -84,7 +84,7 @@ jobs:
           mkdir -p appstream-out
           appstreamcli compose \
             --origin=cosmic-applet-moon \
-            --components=io.github.gavril.amarant.CosmicAppletMoon \
+            --components=io.github.gavril_amarant.cosmic-applet-moon \
             --result-root=appstream-out \
             pkg-extract/
 

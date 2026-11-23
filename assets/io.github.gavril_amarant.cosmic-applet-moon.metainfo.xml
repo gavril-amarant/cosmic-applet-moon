@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.gavril.amarant.CosmicAppletMoon</id>
-  <icon type="remote" width="128" height="128">https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/icons/moon-6.png</icon>
+  <developer id="io.github.gavril_amarant">
+    <name>Gavril Amarant</name>
+  </developer>
+  <releases>
+    <release version="1.0.0" date="2026-11-23">
+      <description>
+        <p>Initial release of Moon Phase for COSMIC Desktop.</p>
+      </description>
+    </release>
+  </releases>  
+  <id>io.github.gavril_amarant.cosmic-applet-moon</id>
+  <icon type="remote" width="128" height="128">https://raw.githubusercontent.com/gavril-amarant/cosmic-applet-moon/main/assets/icons/app-icon-128.png</icon>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Moon Phase</name>
@@ -13,20 +23,20 @@
       moon events, and local moon/sun rise and set times.
     </p>
   </description>
-  <launchable type="desktop-id">io.github.gavril.amarant.CosmicAppletMoon.desktop</launchable>
+  <launchable type="desktop-id">io.github.gavril_amarant.cosmic-applet-moon.desktop</launchable>
   <url type="homepage">https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file</url>
   <screenshots>
-    <screenshot type="default">
+    <screenshot>
       <caption>Moon Phase</caption>
-      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/moon_icon.png</image>
+      <image>https://raw.githubusercontent.com/gavril-amarant/cosmic-applet-moon/main/assets/screenshots/moon_icon.png</image>
     </screenshot>
-    <screenshot type="default">
+    <screenshot>
       <caption>Moon Info</caption>
-      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/moon_info.png</image>
+      <image>https://raw.githubusercontent.com/gavril-amarant/cosmic-applet-moon/main/assets/screenshots/moon_info.png</image>
     </screenshot>
     <screenshot type="default">
       <caption>Moon Phase</caption>
-      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/notification.png</image>
+      <image>https://raw.githubusercontent.com/gavril-amarant/cosmic-applet-moon/main/assets/screenshots/notification.png</image>
     </screenshot>        
   </screenshots>
   <provides>

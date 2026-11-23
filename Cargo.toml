@@ -27,9 +27,9 @@ priority = "optional"
 depends = "$auto"
 assets = [
     ["target/release/cosmic-applet-moon", "usr/bin/", "755"],
-    ["assets/io.github.gavril.amarant.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
-    ["assets/io.github.gavril.amarant.CosmicAppletMoon.metainfo.xml", "usr/share/metainfo/", "644"],
-    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.gavril.amarant.CosmicAppletMoon.png", "644"],
+    ["assets/io.github.gavril_amarant.cosmic-applet-moon.desktop", "usr/share/applications/", "644"],
+    ["assets/io.github.gavril_amarant.cosmic-applet-moon.metainfo.xml", "usr/share/metainfo/", "644"],
+    ["assets/icons/app-icon-128.png", "usr/share/icons/hicolor/128x128/apps/io.github.gavril_amarant.cosmic-applet-moon.png", "644"],
 ]
 
 

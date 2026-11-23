@@ -6,7 +6,7 @@ use crate::moon_data::MoonInfo;
 use crate::view::{get_moon_phase_image, view_panel, view_popup};
 use cosmic::surface::action::{app_popup, destroy_popup};
 
-pub const APP_ID: &str = "io.github.gavril.amarant.CosmicAppletMoon";
+pub const APP_ID: &str = "io.github.gavril_amarant.cosmic-applet-moon";
 
 #[derive(Debug, Clone)]
 pub enum Msg {

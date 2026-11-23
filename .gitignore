@@ -19,3 +19,7 @@
 *.swo
 *~
 .DS_Store
+
+# Flatpak build artifacts
+flatpak-build/
+.flatpak-builder/
