@@ -58,7 +58,7 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 ```bash
 sudo apt remove cosmic-applet-moon
 ```
-Note: if the applet is running, it still be there until you restart/relogin or remove it by hand from settings.
+Note: if the applet is running, it will still be there until you restart/relogin or remove it by hand from settings.
 ---
 # For Developers
 
