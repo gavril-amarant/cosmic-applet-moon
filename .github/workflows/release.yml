@@ -85,22 +85,24 @@ jobs:
           appstreamcli compose \
             --origin=cosmic-applet-moon \
             --components=io.github.gavril.amarant.CosmicAppletMoon \
-            --data-dir=appstream-out/data \
-            --icons-dir=appstream-out/icons \
+            --result-root=appstream-out \
             pkg-extract/
 
           ls -laR appstream-out/
 
           # Convert generated YAML catalog (.yml.xz or .yml.gz) into Components-amd64.yml.gz
-          if ls appstream-out/data/*.yml.xz >/dev/null 2>&1; then
-            xz -dc appstream-out/data/*.yml.xz | gzip -9 > apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
-          elif ls appstream-out/data/*.yml.gz >/dev/null 2>&1; then
-            cp -f appstream-out/data/*.yml.gz apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+          YML_XZ=$(find appstream-out -name "*.yml.xz" | head -n1)
+          YML_GZ=$(find appstream-out -name "*.yml.gz" | head -n1)
+          if [ -n "$YML_XZ" ]; then
+            xz -dc "$YML_XZ" | gzip -9 > apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+          elif [ -n "$YML_GZ" ]; then
+            cp -f "$YML_GZ" apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
           fi
 
-          # Package composed icons into icons-128x128.tar.gz (or fallback to our 128x128 PNG)
-          if [ -d appstream-out/icons/128x128 ]; then
-            tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/icons/128x128 .
+          # Package composed icons into icons-128x128.tar.gz
+          ICON_TAR=$(find appstream-out -name "*128x128*.tar.gz" | head -n1)
+          if [ -n "$ICON_TAR" ]; then
+            cp -f "$ICON_TAR" apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz
           else
             mkdir -p appstream-out/icons/128x128
             cp pkg-extract/usr/share/icons/hicolor/128x128/apps/io.github.gavril.amarant.CosmicAppletMoon.png appstream-out/icons/128x128/
