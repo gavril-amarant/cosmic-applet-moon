@@ -58,32 +58,38 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 ```bash
 sudo apt remove cosmic-applet-moon
 ```
-
+Note: if the applet is running, it still be there until you restart/relogin or remove it by hand from settings.
 ---
-# For Developers:
-## Building from Source (Other Linux Distributions)
+# For Developers
 
-For Fedora, Arch Linux, or other distributions using COSMIC:
+## Building from Source
 
 ### Dependencies
 
-- **Fedora:** `sudo dnf install cargo rust just libxkbcommon-devel wayland-devel pkgconf-pkg-config`
-- **Arch Linux:** `sudo pacman -S rust just libxkbcommon wayland pkgconf`
+- **Pop!_OS / Ubuntu / Debian:**
+  ```bash
+  sudo apt install cargo rustc libxkbcommon-dev libwayland-dev pkg-config
+  ```
+- **Fedora:**
+  ```bash
+  sudo dnf install cargo rust libxkbcommon-devel wayland-devel pkgconf-pkg-config
+  ```
+- **Arch Linux:**
+  ```bash
+  sudo pacman -S rust libxkbcommon wayland pkgconf
+  ```
 
 ### Build & Install
 
 ```bash
 git clone https://github.com/gavril-amarant/cosmic-applet-moon.git
 cd cosmic-applet-moon
-sudo just install-system
 ```
 
-To uninstall:
+### Building a `.deb` Package Locally (Debian / Ubuntu / Pop!_OS)
 
 ```bash
-sudo just uninstall-system
+cargo install cargo-deb
+cargo deb
+sudo apt install  --reinstall ./target/debian/cosmic-applet-moon_*_amd64.deb
 ```
-
-## License
-
-This project is open source—see the `LICENSE` file for details.
