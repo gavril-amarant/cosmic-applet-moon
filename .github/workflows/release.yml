@@ -1,4 +1,4 @@
-name: Release Packages
+name: Release Packages & APT Repo
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  build-deb:
+  build-and-publish:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -36,10 +36,10 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "deb_ver=${DEB_VER}" >> "$GITHUB_OUTPUT"
 
-      - name: Install system dependencies
+      - name: Install build & packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxkbcommon-dev libwayland-dev pkg-config
+          sudo apt-get install -y libxkbcommon-dev libwayland-dev pkg-config dpkg-dev apt-utils appstream
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -60,3 +60,71 @@ jobs:
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           files: target/debian/*.deb
+
+      - name: Prepare APT & AppStream repository
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+          mkdir -p apt-repo/pool/main
+          mkdir -p apt-repo/dists/stable/main/binary-amd64
+          mkdir -p apt-repo/dists/stable/main/dep11
+          mkdir -p pkg-extract
+
+          # Copy only the versioned .deb into pool/main
+          cp target/debian/cosmic-applet-moon_${{ steps.meta.outputs.deb_ver }}*_amd64.deb apt-repo/pool/main/
+
+          # Export public GPG key for users
+          gpg --armor --export "$GPG_KEY_ID" > apt-repo/public.gpg
+
+          # Extract .deb contents so appstreamcli can compose COSMIC Store icons & metadata
+          dpkg-deb -x apt-repo/pool/main/*.deb pkg-extract/
+          appstreamcli compose \
+            --origin=cosmic-applet-moon \
+            --components=io.github.gavril.amarant.CosmicAppletMoon \
+            --result-root=apt-repo/dists/stable/main/dep11 \
+            pkg-extract/ || true
+
+          # Rename appstreamcli output into standard Debian/Ubuntu dep11 paths if generated
+          if [ -d apt-repo/dists/stable/main/dep11/catalog ]; then
+            cp -f apt-repo/dists/stable/main/dep11/catalog/*.xml.gz apt-repo/dists/stable/main/dep11/Components-amd64.xml.gz 2>/dev/null || true
+            cp -f apt-repo/dists/stable/main/dep11/catalog/*.tar.gz apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz 2>/dev/null || true
+            rm -rf apt-repo/dists/stable/main/dep11/catalog
+          fi
+
+          # Generate Packages & Packages.gz
+          cd apt-repo
+          dpkg-scanpackages --arch amd64 pool/main > dists/stable/main/binary-amd64/Packages
+          gzip -k -f dists/stable/main/binary-amd64/Packages
+
+          # Generate signed Release & InRelease
+          cat <<EOF > dists/stable/Release
+          Origin: cosmic-applet-moon
+          Label: cosmic-applet-moon
+          Suite: stable
+          Codename: stable
+          Architectures: amd64
+          Components: main
+          Description: APT Repository for COSMIC Moon Phase & Sun Times Applet
+          EOF
+          apt-ftparchive release dists/stable >> dists/stable/Release
+
+          gpg --batch --yes --default-key "$GPG_KEY_ID" -abs -o dists/stable/Release.gpg dists/stable/Release
+          gpg --batch --yes --default-key "$GPG_KEY_ID" --clearsign -o dists/stable/InRelease dists/stable/Release
+
+          # Simple landing page
+          cat <<EOF > index.html
+          <!doctype html>
+          <html><body>
+          <h1>COSMIC Moon Phase &amp; Sun Times APT Repository</h1>
+          <p>See <a href="https://github.com">GitHub</a> for installation instructions.</p>
+          </body></html>
+          EOF
+
+      - name: Deploy APT repository to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apt-repo
