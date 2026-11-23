@@ -28,9 +28,9 @@ A lightweight, 100% offline panel applet for the [COSMIC Desktop Environment](ht
 ## Installation (Pop!_OS / Ubuntu / Debian)
 
 1. Download the latest `.deb` package from here [cosmic-applet-moon_amd64.deb](https://github.com/gavril-amarant/cosmic-applet-moon/releases/latest/download/cosmic-applet-moon_amd64.deb) or choose an older version from [Releases](https://github.com/gavril-amarant/cosmic-applet-moon/releases) page.
-2. Install it via terminal (or double-click the `.deb` file to open it in COSMIC Store):
+2. Double-click on the downloaded file cosmic-applet-moon_amd64.deb and click Install. Or, if you prefer from terminal, install it like this:
    ```bash
-   sudo apt install ./cosmic-applet-moon_*_amd64.deb
+   sudo apt install --reinstall ./cosmic-applet-moon_*_amd64.deb
    ```
 3. Open **COSMIC Settings** → **Desktop** → **Panel** (or **Dock**).
 <p align="center">

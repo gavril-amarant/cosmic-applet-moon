@@ -5,17 +5,17 @@ use crate::moon_horizon::CityEntry;
 
 // ── Icon loading ─────────────────────────────────────────────
 
-macro_rules! moon_icons {
+macro_rules! moon_icon_bytes {
     ($day:expr, $($n:expr => $file:expr),*) => {
         match $day {
-            $($n => Handle::from_bytes(include_bytes!($file).to_vec()),)*
-            _ => Handle::from_bytes(include_bytes!("../assets/icons/moon-1-NM.png").to_vec()),
+            $($n => include_bytes!($file).as_slice(),)*
+            _ => include_bytes!("../assets/icons/moon-1-NM.png").as_slice(),
         }
     };
 }
 
-pub fn get_moon_phase_image(day: usize) -> Handle {
-    moon_icons!(day,
+pub fn get_moon_phase_bytes(day: usize) -> &'static [u8] {
+    moon_icon_bytes!(day,
         1 => "../assets/icons/moon-1-NM.png",
         2 => "../assets/icons/moon-2.png",
         3 => "../assets/icons/moon-3.png",
@@ -46,6 +46,10 @@ pub fn get_moon_phase_image(day: usize) -> Handle {
         28 => "../assets/icons/moon-28.png",
         29 => "../assets/icons/moon-29.png"
     )
+}
+
+pub fn get_moon_phase_image(day: usize) -> Handle {
+    Handle::from_bytes(get_moon_phase_bytes(day).to_vec())
 }
 
 // ── Reusable widgets ─────────────────────────────────────────

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.gavril.amarant.CosmicAppletMoon</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Moon Phase</name>
+  <summary>Offline moon phase, illumination, and local moon/sun rise and set times</summary>
+  <description>
+    <p>
+      Moon Phase tracker, a lightweight, 100% offline panel applet for the COSMIC Desktop Environment
+      that displays the current lunar phase, illumination percentage, upcoming
+      moon events, and local moon/sun rise and set times.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.gavril.amarant.CosmicAppletMoon.desktop</launchable>
+  <url type="homepage">https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Moon Phase</caption>
+      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/moon_icon.png</image>
+    </screenshot>
+    <screenshot type="default">
+      <caption>Moon Info</caption>
+      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/moon_info.png</image>
+    </screenshot>
+    <screenshot type="default">
+      <caption>Moon Phase</caption>
+      <image>https://github.com/gavril-amarant/cosmic-applet-moon/blob/main/assets/screenshots/notification.png</image>
+    </screenshot>        
+  </screenshots>
+  <provides>
+    <binary>cosmic-applet-moon</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+</component>

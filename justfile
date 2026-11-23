@@ -1,5 +1,5 @@
 name := 'cosmic-applet-moon'
-appid := 'io.github.gavril_amarant.CosmicAppletMoon'
+appid := 'io.github.gavril.amarant.CosmicAppletMoon'
 icon_src := 'assets/icons/moon-6.png'
 
 # Build release binary

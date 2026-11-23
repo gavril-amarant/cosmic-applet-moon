@@ -922,7 +922,9 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "iana-time-zone",
+ "image",
  "libcosmic",
+ "ron",
  "serde",
  "zbus 6.2.1",
 ]

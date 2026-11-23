@@ -4,7 +4,7 @@
     {
       "type": "shell",
       "label": "Deploy Applet to COSMIC Panel",
-      "command": "cargo build --release && install -D target/release/cosmic-applet-moon ~/.local/bin/cosmic-applet-moon && (pkill -x cosmic-panel || true) && sleep 0.5 && systemd-run --user --collect cosmic-panel",
+      "command": "cargo deb && sudo apt install --reinstall ./target/debian/cosmic-applet-moon_*.deb && (pkill -x cosmic-applet-moon || true) && (pkill -x cosmic-panel || true) && sleep 0.5",
       "options": {
         "env": {
           "PATH": "~/.cargo/bin:${env:PATH}"

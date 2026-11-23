@@ -1,6 +1,7 @@
 use cosmic::cosmic_config::{self, cosmic_config_derive::CosmicConfigEntry, Config, CosmicConfigEntry};
 use serde::{Deserialize, Serialize};
 
+
 pub const CONFIG_VERSION: u64 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, CosmicConfigEntry)]
@@ -34,32 +35,40 @@ impl Default for MoonConfig {
 }
 
 impl MoonConfig {
-    /// Loads the saved config from `~/.config/cosmic/<APP_ID>/v1`, falling back to defaults.
+    fn file_path(app_id: &str) -> Option<std::path::PathBuf> {
+        let base = std::env::var_os("XDG_CONFIG_HOME")
+            .map(std::path::PathBuf::from)
+            .or_else(|| {
+                std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".config"))
+            })?;
+        Some(base.join("cosmic").join(app_id).join("v1").join("settings.ron"))
+    }
+
     pub fn load(app_id: &str) -> (Option<Config>, Self) {
-        match Config::new(app_id, CONFIG_VERSION) {
-            Ok(handler) => {
-                let config = match MoonConfig::get_entry(&handler) {
-                    Ok(entry) => entry,
-                    Err((_errors, partial)) => partial,
-                };
-                (Some(handler), config)
+        let config = Self::file_path(app_id)
+            .and_then(|p| std::fs::read_to_string(p).ok())
+            .and_then(|s| ron::from_str(&s).ok())
+            .unwrap_or_default();
+        (None, config)
+    }
+
+    pub fn persist(&self, app_id: &str) {
+        if let Some(path) = Self::file_path(app_id) {
+            if let Some(parent) = path.parent() {
+                let _ = std::fs::create_dir_all(parent);
             }
-            Err(_) => (None, MoonConfig::default()),
+            if let Ok(serialized) = ron::to_string(self) {
+                let _ = std::fs::write(path, serialized);
+            }
         }
     }
 
-    pub fn set_notified(&mut self, handler: Option<&Config>, event_key: String) {
-        self.last_notified_event = Some(event_key.clone());
-        if let Some(h) = handler {
-            let _ = self.set_last_notified_event(h, Some(event_key));
-        }
+    pub fn set_notified(&mut self, _handler: Option<&Config>, event_key: String) {
+        self.last_notified_event = Some(event_key);
+        self.persist(crate::moon_applet::APP_ID);
     }
 
-
-    /// Persists the updated `manual_tz` value to disk.
-    pub fn save(&mut self, handler: Option<&Config>) {
-        if let Some(h) = handler {
-            let _ = self.set_manual_tz(h, self.manual_tz.clone());
-        }
+    pub fn save(&mut self, _handler: Option<&Config>) {
+        self.persist(crate::moon_applet::APP_ID);
     }
 }

@@ -1,4 +1,5 @@
 [package]
+homepage = "https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file"
 name = "cosmic-applet-moon"
 version = "1.0.0"
 edition = "2024"
@@ -10,9 +11,12 @@ serde = "1.0.229"
 iana-time-zone = "0.1"
 chrono-tz = "0.10"
 zbus = { version = "6.2", default-features = false, features = ["tokio"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+ron = "0.12.3"
+
 
 [package.metadata.deb]
-maintainer = "Gavril Amarant <your-email@example.com>"
+maintainer = "Gavril Amarant"
 copyright = "2026, Gavril Amarant"
 license-file = ["LICENSE", "0"]
 extended-description = """\
@@ -23,8 +27,9 @@ priority = "optional"
 depends = "$auto"
 assets = [
     ["target/release/cosmic-applet-moon", "usr/bin/", "755"],
-    ["assets/io.github.gavril_amarant.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
-    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.gavril_amarant.CosmicAppletMoon.png", "644"],
+    ["assets/io.github.gavril.amarant.CosmicAppletMoon.desktop", "usr/share/applications/", "644"],
+    ["assets/io.github.gavril.amarant.CosmicAppletMoon.metainfo.xml", "usr/share/metainfo/", "644"],
+    ["assets/icons/moon-6.png", "usr/share/icons/hicolor/128x128/apps/io.github.gavril.amarant.CosmicAppletMoon.png", "644"],
 ]
 
 

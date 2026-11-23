@@ -6,7 +6,7 @@ use crate::moon_data::MoonInfo;
 use crate::view::{get_moon_phase_image, view_panel, view_popup};
 use cosmic::surface::action::{app_popup, destroy_popup};
 
-const APP_ID: &str = "io.github.gavril_amarant.CosmicAppletMoon";
+pub const APP_ID: &str = "io.github.gavril.amarant.CosmicAppletMoon";
 
 #[derive(Debug, Clone)]
 pub enum Msg {
@@ -105,20 +105,14 @@ impl cosmic::Application for MoonApplet {
                 let days = (days_idx as u32).min(14);
                 self.config.notify_days = days;
                 self.config.last_notified_event = None;
-                if let Some(h) = self.config_handler.as_ref() {
-                    let _ = self.config.set_notify_days(h, days);
-                    let _ = self.config.set_last_notified_event(h, None);
-                }
+                self.config.persist(APP_ID);
                 return self.check_moon_notifications();
             }
             Msg::SelectNotifyHours(hours_idx) => {
                 let hours = (hours_idx as u32).min(24);
                 self.config.notify_hours = hours;
                 self.config.last_notified_event = None;
-                if let Some(h) = self.config_handler.as_ref() {
-                    let _ = self.config.set_notify_hours(h, hours);
-                    let _ = self.config.set_last_notified_event(h, None);
-                }
+                self.config.persist(APP_ID);
                 return self.check_moon_notifications();
             }            
             Msg::Tick => {
@@ -143,9 +137,7 @@ impl cosmic::Application for MoonApplet {
             }      
             Msg::ToggleNotifications(enabled) => {
                 self.config.notifications_enabled = enabled;
-                if let Some(h) = self.config_handler.as_ref() {
-                    let _ = self.config.set_notifications_enabled(h, enabled);
-                }
+                self.config.persist(APP_ID);
                 if enabled { return self.check_moon_notifications(); }
             }
 
@@ -238,10 +230,13 @@ impl MoonApplet {
 
                     self.config.set_notified(self.config_handler.as_ref(), event_key);
 
+                    let icon_bytes = crate::view::get_moon_phase_bytes(self.info.day);
+
                     return Task::future(async move {
-                        send_desktop_notification(summary, body).await;
+                        send_desktop_notification(summary, body, icon_bytes).await;
                         Action::None
                     });
+
                 }
             }
         }
@@ -252,14 +247,31 @@ impl MoonApplet {
 
 }
 
-async fn send_desktop_notification(summary: String, body: String) {
+async fn send_desktop_notification(summary: String, body: String, icon_bytes: &'static [u8]) {
     let Ok(conn) = zbus::Connection::session().await else {
         return;
     };
 
     let empty_actions: Vec<&str> = Vec::new();
-    let empty_hints: std::collections::HashMap<&str, zbus::Variant<'_>> =
+    let mut hints: std::collections::HashMap<&str, zbus::Variant<'_>> =
         std::collections::HashMap::new();
+
+    if let Ok(img) = image::load_from_memory(icon_bytes) {
+        let rgba = img.to_rgba8();
+        let (w, h) = rgba.dimensions();
+        let rowstride = (w * 4) as i32;
+        let data = rgba.into_raw();
+        let image_struct = zbus::Structure::from((
+            w as i32,
+            h as i32,
+            rowstride,
+            true,  // has_alpha
+            8i32,  // bits_per_sample
+            4i32,  // channels
+            data,
+        ));
+        hints.insert("image-data", zbus::Variant::Structure(image_struct));
+    }
 
     let _ = conn
         .call_method(
@@ -270,13 +282,14 @@ async fn send_desktop_notification(summary: String, body: String) {
             &(
                 "Cosmic Moon Applet",
                 0u32,
-                APP_ID, // notification icon
+                "",
                 summary.as_str(),
                 body.as_str(),
                 empty_actions,
-                empty_hints,
+                hints,
                 -1i32,
             ),
         )
         .await;
 }
+
