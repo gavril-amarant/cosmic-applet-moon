@@ -118,8 +118,8 @@ jobs:
           cat <<EOF > index.html
           <!doctype html>
           <html><body>
-          <h1>COSMIC Moon Phase &amp; Sun Times APT Repository</h1>
-          <p>See <a href="https://github.com">GitHub</a> for installation instructions.</p>
+          <h1>Moon Phase for COSMIC DE APT Repository</h1>
+          <p>See <a href="https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file">Moon Phase Homepage</a> for installation instructions.</p>
           </body></html>
           EOF
 
