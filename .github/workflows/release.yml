@@ -90,24 +90,14 @@ jobs:
 
           ls -laR appstream-out/
 
-          # Convert generated YAML catalog (.yml.xz or .yml.gz) into Components-amd64.yml.gz
-          YML_XZ=$(find appstream-out -name "*.yml.xz" | head -n1)
-          YML_GZ=$(find appstream-out -name "*.yml.gz" | head -n1)
-          if [ -n "$YML_XZ" ]; then
-            xz -dc "$YML_XZ" | gzip -9 > apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
-          elif [ -n "$YML_GZ" ]; then
-            cp -f "$YML_GZ" apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
-          fi
+          # Convert composed XML catalog into Ubuntu/Pop!_OS DEP-11 YAML (Components-amd64.yml.gz)
+          appstreamcli convert \
+            appstream-out/usr/share/swcatalog/xml/cosmic-applet-moon.xml.gz \
+            apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
 
-          # Package composed icons into icons-128x128.tar.gz
-          ICON_TAR=$(find appstream-out -name "*128x128*.tar.gz" | head -n1)
-          if [ -n "$ICON_TAR" ]; then
-            cp -f "$ICON_TAR" apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz
-          else
-            mkdir -p appstream-out/icons/128x128
-            cp pkg-extract/usr/share/icons/hicolor/128x128/apps/io.github.gavril.amarant.CosmicAppletMoon.png appstream-out/icons/128x128/
-            tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/icons/128x128 .
-          fi
+          # Package composed icons into icons-128x128.tar.gz and icons-64x64.tar.gz
+          tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/usr/share/swcatalog/icons/cosmic-applet-moon/128x128 .
+          tar -czf apt-repo/dists/stable/main/dep11/icons-64x64.tar.gz -C appstream-out/usr/share/swcatalog/icons/cosmic-applet-moon/64x64 .
 
           # Generate Packages & Packages.gz
           cd apt-repo
