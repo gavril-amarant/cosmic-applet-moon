@@ -79,20 +79,33 @@ jobs:
           # Export public GPG key for users
           gpg --armor --export "$GPG_KEY_ID" > apt-repo/public.gpg
 
-          # Extract .deb contents so appstreamcli can compose COSMIC Store icons & metadata
           # Extract .deb contents so appstreamcli can compose COSMIC Store YAML catalog & icons
           dpkg-deb -x apt-repo/pool/main/*.deb pkg-extract/
+          mkdir -p appstream-out
           appstreamcli compose \
             --origin=cosmic-applet-moon \
             --components=io.github.gavril.amarant.CosmicAppletMoon \
-            --result-root=apt-repo/dists/stable/main/dep11 \
+            --data-dir=appstream-out/data \
+            --icons-dir=appstream-out/icons \
             pkg-extract/
 
-          # Move generated YAML catalog and icon tarball into standard Ubuntu/Pop!_OS dep11 paths
-          find apt-repo/dists/stable/main/dep11 -name "*.yml.gz" -exec cp -f {} apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz \;
-          find apt-repo/dists/stable/main/dep11 -name "*128x128*.tar.gz" -exec cp -f {} apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz \;
-          rm -rf apt-repo/dists/stable/main/dep11/catalog
+          ls -laR appstream-out/
 
+          # Convert generated YAML catalog (.yml.xz or .yml.gz) into Components-amd64.yml.gz
+          if ls appstream-out/data/*.yml.xz >/dev/null 2>&1; then
+            xz -dc appstream-out/data/*.yml.xz | gzip -9 > apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+          elif ls appstream-out/data/*.yml.gz >/dev/null 2>&1; then
+            cp -f appstream-out/data/*.yml.gz apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+          fi
+
+          # Package composed icons into icons-128x128.tar.gz (or fallback to our 128x128 PNG)
+          if [ -d appstream-out/icons/128x128 ]; then
+            tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/icons/128x128 .
+          else
+            mkdir -p appstream-out/icons/128x128
+            cp pkg-extract/usr/share/icons/hicolor/128x128/apps/io.github.gavril.amarant.CosmicAppletMoon.png appstream-out/icons/128x128/
+            tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/icons/128x128 .
+          fi
 
           # Generate Packages & Packages.gz
           cd apt-repo
