@@ -93,7 +93,13 @@ jobs:
           # Convert composed XML catalog into Ubuntu/Pop!_OS DEP-11 YAML (Components-amd64.yml.gz)
           appstreamcli convert \
             appstream-out/usr/share/swcatalog/xml/cosmic-applet-moon.xml.gz \
-            apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+            appstream-out/Components-amd64.yml
+
+          # Inject Origin and Package fields required by APT / COSMIC Store
+          sed -i "/^Version: '1.0'/a Origin: cosmic-applet-moon" appstream-out/Components-amd64.yml
+          sed -i "/^Type: desktop-application/a Package: cosmic-applet-moon" appstream-out/Components-amd64.yml
+          gzip -9 -c appstream-out/Components-amd64.yml > apt-repo/dists/stable/main/dep11/Components-amd64.yml.gz
+
 
           # Package composed icons into icons-128x128.tar.gz and icons-64x64.tar.gz
           tar -czf apt-repo/dists/stable/main/dep11/icons-128x128.tar.gz -C appstream-out/usr/share/swcatalog/icons/cosmic-applet-moon/128x128 .
