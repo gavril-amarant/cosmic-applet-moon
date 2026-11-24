@@ -2,8 +2,6 @@ use cosmic::cosmic_config::{self, cosmic_config_derive::CosmicConfigEntry, Confi
 use serde::{Deserialize, Serialize};
 
 
-pub const CONFIG_VERSION: u64 = 1;
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, CosmicConfigEntry)]
 #[version = 1]
 pub struct MoonConfig {

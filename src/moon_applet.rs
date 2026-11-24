@@ -109,7 +109,7 @@ impl cosmic::Application for MoonApplet {
                 return self.check_moon_notifications();
             }
             Msg::SelectNotifyHours(hours_idx) => {
-                let hours = (hours_idx as u32).min(24);
+                let hours = (hours_idx as u32).min(23);
                 self.config.notify_hours = hours;
                 self.config.last_notified_event = None;
                 self.config.persist(APP_ID);

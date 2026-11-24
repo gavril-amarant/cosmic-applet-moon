@@ -22,16 +22,6 @@
       }
     },
     {
-      "label": "Build & Reload Flatpak Applet",
-      "type": "shell",
-      "command": "flatpak-builder --user --install --force-clean flatpak-build flatpak/io.github.gavril_amarant.cosmic-applet-moon.yml && (pkill -f cosmic-applet-moon || true) && (pkill -x cosmic-panel || true) && sleep 0.5 && systemd-run --user --collect cosmic-panel",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": []
-    },
-    {
       "type": "shell",
       "label": "Test Applet Output Natively",
       "command": "cargo test -- --nocapture test_output",

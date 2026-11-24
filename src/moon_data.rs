@@ -58,7 +58,7 @@ pub struct MoonInfo {
     pub phase: MoonPhaseData,
     pub calendar: MoonCalendarData,
     pub illumination: f64,
-    pub waxing: bool,
+    pub growing: bool,
     pub day: usize,
     pub next_state: &'static str,
     pub time_remaining: String,
@@ -128,16 +128,16 @@ impl MoonInfo {
         let phase_data = compute_phase(now, &calendar_data, lat_deg, lon_deg);
 
         let illumination = phase_data.fraction_illuminated * 100.0;
-        let waxing = phase_data.fraction_of_lunation < 0.5;
+        let growing = phase_data.fraction_of_lunation < 0.5;
         let day = (phase_data.age.round() as usize).clamp(1, 29);
-        let next_state = if waxing {
+        let next_state = if growing {
             "Full Moon in:"
         } else {
             "New Moon in:"
         };
 
         let current_jd = calendar_data.julian_date;
-        let target_jd = if waxing {
+        let target_jd = if growing {
             calendar_data.full_moon
         } else {
             calendar_data.next_new_moon
@@ -159,7 +159,7 @@ impl MoonInfo {
             phase: phase_data,
             calendar: calendar_data,
             illumination,
-            waxing,
+            growing,
             day,
             next_state,
             time_remaining: format_age(target_jd - current_jd),
@@ -199,23 +199,35 @@ fn jd_to_iso(jd: f64) -> String {
     jd_to_datetime(jd).to_rfc3339()
 }
 
+/// Helper: returns the next occurrence strictly after `jd_now` for `phase` (0=New, 1=FQ, 2=Full, 3=LQ).
+fn next_phase_after(k_start: f64, phase: u8, jd_now: f64) -> f64 {
+    let mut k = k_start;
+    let mut jd = true_phase_jd(k, phase);
+    while jd <= jd_now {
+        k += 1.0;
+        jd = true_phase_jd(k, phase);
+    }
+    jd
+}
+
 /// Computes exact New, First Quarter, Full, and Last Quarter JDs using Meeus Ch. 49.
 fn compute_calendar(now: DateTime<Utc>) -> MoonCalendarData {
     let jd_now = datetime_to_jd(now);
     let year_approx = 2000.0 + (jd_now - 2451545.0) / 365.25;
     let mut k = ((year_approx - 2000.0) * 12.3685).floor() - 1.0;
 
-    // Step forward until we find the lunation bracketing `jd_now`
+    // Step forward until `k` is the lunation whose New Moon is `<= jd_now` (for accurate lunar age)
     let mut last_new = true_phase_jd(k, 0);
     while true_phase_jd(k + 1.0, 0) <= jd_now {
         k += 1.0;
         last_new = true_phase_jd(k, 0);
     }
 
-    let first_q = true_phase_jd(k, 1);
-    let full = true_phase_jd(k, 2);
-    let last_q = true_phase_jd(k, 3);
-    let next_new = true_phase_jd(k + 1.0, 0);
+    // Each upcoming phase independently advances to `k + 1.0` if it already occurred in lunation `k`
+    let first_q = next_phase_after(k, 1, jd_now);
+    let full = next_phase_after(k, 2, jd_now);
+    let last_q = next_phase_after(k, 3, jd_now);
+    let next_new = next_phase_after(k, 0, jd_now);
 
     // Meeus lunation number (Lunation 1 = Jan 17, 1923; Lunation 953 = Jan 6, 2000)
     let lunation = (k.round() as i64 + 953).max(0) as u32;

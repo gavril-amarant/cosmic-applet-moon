@@ -174,10 +174,15 @@ pub fn view_popup<'a>(
     let day_options: Vec<String> = (0..=14)
         .map(|d| if d == 1 { "1 day".to_string() } else { format!("{} days", d) })
         .collect();
-    let hour_options: Vec<String> = (0..=24)
+    let hour_options: Vec<String> = (0..=23)
         .map(|h| if h == 1 { "1 hr".to_string() } else { format!("{} hrs", h) })
         .collect();
 
+    let growing_waxing_str = if info.growing {
+        "(increasing)"
+    } else {
+        "(decreasing)"
+    };
 
     let content = cosmic::iced::widget::column![
         cosmic::iced::widget::row![
@@ -191,13 +196,13 @@ pub fn view_popup<'a>(
                 cosmic::widget::text(" ")
                     .width(cosmic::iced::Length::Fill)
                     .align_x(cosmic::iced::Alignment::Center)
-                    .size(20.0),                    
+                    .size(20.0),   
                 cosmic::iced::widget::rule::horizontal(2),
                 cosmic::widget::text(" ")
                     .width(cosmic::iced::Length::Fill)
                     .align_x(cosmic::iced::Alignment::Center)
                     .size(10.0),                  
-                field_row_short("Illumination:", format!("{:.1}%", info.illumination)),
+                field_row_short("Illumination:", format!("{:.1}% {}", info.illumination, growing_waxing_str)),
                 field_row_short("Moon Age:", format_age(p.age)),
                 field_row_short(info.next_state, info.time_remaining.clone()),
             ]
@@ -281,7 +286,7 @@ pub fn view_popup<'a>(
             ),
             cosmic::widget::dropdown(
                 hour_options,
-                Some((notify_hours as usize).min(24)),
+                Some((notify_hours as usize).min(23)),
                 Msg::SelectNotifyHours,
             ),
         ]
