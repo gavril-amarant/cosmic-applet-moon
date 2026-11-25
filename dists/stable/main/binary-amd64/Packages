@@ -1,14 +1,14 @@
 Package: cosmic-applet-moon
-Version: 1.0.2
+Version: 1.0.3
 Architecture: amd64
 Maintainer: Gavril Amarant
-Installed-Size: 22475
+Installed-Size: 22472
 Depends: libc6 (>= 2.39), libxkbcommon0 (>= 0.5.0)
-Filename: pool/main/cosmic-applet-moon_1.0.2_amd64.deb
-Size: 6216380
-MD5sum: a782a72fbecb26b816385672681a50aa
-SHA1: e00c5daa4b88d749dce6b71b5042edf9bdf382f1
-SHA256: 311ce89069052f455f990dfb7fc4531fc9c30a2c8498aabddf7b4e9cb44d45ab
+Filename: pool/main/cosmic-applet-moon_1.0.3_amd64.deb
+Size: 6218388
+MD5sum: 72160f53325a004cc0456b05ed5ac770
+SHA1: e90f259975047a1df3cc68c49d828cfc9543792d
+SHA256: af6dbadc68ae07ae4142b919bd96b9aafe57d5cf16311ae60f298384373df4c0
 Section: utils
 Priority: optional
 Homepage: https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file
