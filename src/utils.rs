@@ -3,7 +3,7 @@ use chrono::{DateTime, Local, Utc};
 
 
 pub const APP_ID: &str = "io.github.gavril_amarant.cosmic-applet-moon";
-pub const APP_VERSION: &str = "v1.0.2";
+pub const APP_VERSION: &str = "v1.0.3";
 pub const APP_HOMEPAGE: &str = "https://github.com/gavril-amarant/cosmic-applet-moon?tab=readme-ov-file#readme-ov-file";
 
 // ── Icon loading ─────────────────────────────────────────────
