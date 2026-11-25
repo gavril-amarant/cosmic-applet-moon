@@ -1,74 +1,17 @@
 use cosmic::iced::widget::image::Handle;
-use crate::moon_data::{format_age, format_in_tz, MoonInfo};
+use crate::astronomy::{MoonInfo};
+use crate::utils::{APP_HOMEPAGE, APP_VERSION, format_age, format_in_tz};
 use crate::moon_applet::Msg;
-use crate::moon_horizon::CityEntry;
+use crate::location_utils::CityEntry;
 
-// ── Icon loading ─────────────────────────────────────────────
 
-macro_rules! moon_icon_bytes {
-    ($day:expr, $($n:expr => $file:expr),*) => {
-        match $day {
-            $($n => include_bytes!($file).as_slice(),)*
-            _ => include_bytes!("../assets/icons/moon-1-NM.png").as_slice(),
-        }
-    };
-}
-
-pub fn get_moon_phase_bytes(day: usize) -> &'static [u8] {
-    moon_icon_bytes!(day,
-        1 => "../assets/icons/moon-1-NM.png",
-        2 => "../assets/icons/moon-2.png",
-        3 => "../assets/icons/moon-3.png",
-        4 => "../assets/icons/moon-4.png",
-        5 => "../assets/icons/moon-5.png",
-        6 => "../assets/icons/moon-6.png",
-        7 => "../assets/icons/moon-7.png",
-        8 => "../assets/icons/moon-8-FQ.png",
-        9 => "../assets/icons/moon-9.png",
-        10 => "../assets/icons/moon-10.png",
-        11 => "../assets/icons/moon-11.png",
-        12 => "../assets/icons/moon-12.png",
-        13 => "../assets/icons/moon-13.png",
-        14 => "../assets/icons/moon-14.png",
-        15 => "../assets/icons/moon-15-FM.png",
-        16 => "../assets/icons/moon-16.png",
-        17 => "../assets/icons/moon-17.png",
-        18 => "../assets/icons/moon-18.png",
-        19 => "../assets/icons/moon-19.png",
-        20 => "../assets/icons/moon-20.png",
-        21 => "../assets/icons/moon-21.png",
-        22 => "../assets/icons/moon-22-LQ.png",
-        23 => "../assets/icons/moon-23.png",
-        24 => "../assets/icons/moon-24.png",
-        25 => "../assets/icons/moon-25.png",
-        26 => "../assets/icons/moon-26.png",
-        27 => "../assets/icons/moon-27.png",
-        28 => "../assets/icons/moon-28.png",
-        29 => "../assets/icons/moon-29.png"
-    )
-}
-
-pub fn get_moon_phase_image(day: usize) -> Handle {
-    Handle::from_bytes(get_moon_phase_bytes(day).to_vec())
-}
 
 // ── Reusable widgets ─────────────────────────────────────────
 
-fn field_row<'a>(label: &'a str, value: String) -> cosmic::Element<'a, Msg> {
+fn field_row<'a>(label: &'a str, value: String, width: f32) -> cosmic::Element<'a, Msg> {
     cosmic::widget::row![
         cosmic::widget::text(label)
-            .width(cosmic::iced::Length::Fixed(113.0))
-            .size(10.0),
-        cosmic::widget::text(value).size(10.0),
-    ]
-    .spacing(8)
-    .into()
-}
-
-fn field_row_short<'a>(label: &'a str, value: String) -> cosmic::Element<'a, Msg> {
-    cosmic::widget::row![
-        cosmic::widget::text(label)
-            .width(cosmic::iced::Length::Fixed(70.0))
+            .width(cosmic::iced::Length::Fixed(width))
             .size(10.0),
         cosmic::widget::text(value).size(10.0),
     ]
@@ -100,8 +43,8 @@ fn build_event_rows(info: &MoonInfo) -> Vec<cosmic::Element<'_, Msg>> {
     let mut events: Vec<(&str, &str)> = vec![
         ("Next New Moon:", &c.next_new_moon_utc),
         ("Next Full Moon:", &c.full_moon_utc),
-        ("Next First Quarter:", &c.first_quarter_utc),
-        ("Next Last Quarter:", &c.last_quarter_utc),
+        ("Next Half Moon (first):", &c.first_quarter_utc),
+        ("Next Half Moon (last):", &c.last_quarter_utc),
     ];
 
     events.retain(|(_, s)| *s > now_str.as_str());
@@ -109,7 +52,7 @@ fn build_event_rows(info: &MoonInfo) -> Vec<cosmic::Element<'_, Msg>> {
 
     events
         .iter()
-        .map(|(label, dt)| field_row(*label, format_in_tz(dt, &info.tz_name)).into())
+        .map(|(label, dt)| field_row(*label, format_in_tz(dt, &info.tz_name), 113.0).into())
         .collect()
 }
 
@@ -196,34 +139,61 @@ pub fn view_popup<'a>(
                 cosmic::widget::text(" ")
                     .width(cosmic::iced::Length::Fill)
                     .align_x(cosmic::iced::Alignment::Center)
-                    .size(20.0),   
+                    .size(10.0),   
                 cosmic::iced::widget::rule::horizontal(2),
                 cosmic::widget::text(" ")
                     .width(cosmic::iced::Length::Fill)
                     .align_x(cosmic::iced::Alignment::Center)
                     .size(10.0),                  
-                field_row_short("Illumination:", format!("{:.1}% {}", info.illumination, growing_waxing_str)),
-                field_row_short("Moon Age:", format_age(p.age)),
-                field_row_short(info.next_state, info.time_remaining.clone()),
+                field_row("Illumination:", format!("{:.1}% {}", info.illumination, growing_waxing_str), 70.0),
+                cosmic::widget::tooltip(
+                    field_row("Moon Age:", format_age(p.age), 70.0),
+                    cosmic::widget::text("Time passed since the last New Moon").size(10.0),
+                    cosmic::widget::tooltip::Position::Top,
+                ),                
+                cosmic::widget::tooltip(
+                    field_row(info.next_state, info.time_remaining.clone(), 70.0),
+                    cosmic::widget::text(info.next_state_tooltip).size(10.0),
+                    cosmic::widget::tooltip::Position::Top,
+                )
+                // .style(|_theme| cosmic::widget::popover::Style {
+                //     background: Some(cosmic::iced::Background::Color(
+                //         cosmic::iced::Color::from_rgb(0.15, 0.15, 0.15),
+                //     )),
+                //     text_color: Some(cosmic::iced::Color::WHITE),
+                //     ..Default::default()
+                // })
+                
+                // .style(|theme| {
+                //     let cosmic = theme.cosmic();
+                //     cosmic::widget::popover::Style {
+                //         background: Some(cosmic::iced::Background::Color(
+                //             cosmic::iced::Color::from(cosmic.background(true).base),
+                //         )),
+                //         text_color: Some(cosmic::iced::Color::from(cosmic.background(true).on)),
+                //         ..Default::default()
+                //     }
+                // }),
             ]
         ]
         .spacing(8)
         .align_y(cosmic::iced::Alignment::Center),
         cosmic::iced::widget::rule::horizontal(2),
-
         cosmic::iced::widget::row![
             cosmic::iced::widget::column![
-                field_row("Moonrise Today:",format!("{}", mh.today_moonrise)),
-                field_row("Moonset Today:",format!("{}", mh.today_moonset)),    
-                field_row("Moonrise Tomorrow:",format!("{}", mh.tomorrow_moonrise)),
-                field_row("Moonset Tomorrow:",format!("{}", mh.tomorrow_moonset)), 
+                field_row("Moonrise:",format!("{}", mh.today_moonrise), 113.0),
+                field_row("Moonset:",format!("{}", mh.today_moonset), 113.0),  
+                cosmic::iced::widget::rule::horizontal(1),  
+                field_row("Moonrise Tomorrow:",format!("{}", mh.tomorrow_moonrise), 113.0),
+                field_row("Moonset Tomorrow:",format!("{}", mh.tomorrow_moonset), 113.0), 
             ].width(150),
             cosmic::widget::divider::vertical::default(),
             cosmic::iced::widget::column![
-                field_row("Sunrise Today:",format!("{}", mh.today_sunrise)),
-                field_row("Sunset Today:",format!("{}", mh.today_sunset)),    
-                field_row("Sunrise Tomorrow:",format!("{}", mh.tomorrow_sunrise)),
-                field_row("Sunset Tomorrow:",format!("{}", mh.tomorrow_sunset)), 
+                field_row("Sunrise:",format!("{}", mh.today_sunrise), 113.0),
+                field_row("Sunset:",format!("{}", mh.today_sunset), 113.0),    
+                cosmic::iced::widget::rule::horizontal(1),
+                field_row("Sunrise Tomorrow:",format!("{}", mh.tomorrow_sunrise), 113.0),
+                field_row("Sunset Tomorrow:",format!("{}", mh.tomorrow_sunset), 113.0), 
             ],
         ]        
         .spacing(8)
@@ -238,7 +208,7 @@ pub fn view_popup<'a>(
                 &info.moons_between_moon, 
                 &info.earths_between_moon,
                 p.distance_to_earth_km,
-            )
+            ), 113.0
         ),
         field_row(
             "Earth-Sun Distance:",
@@ -246,7 +216,7 @@ pub fn view_popup<'a>(
                 "{:.1} Suns | {:.1} Earths | {:.0} km",
                 &info.suns_between_sun, 
                 &info.earths_between_sun, p.sun_distance_to_earth_km 
-            )
+            ), 113.0
         ),
         cosmic::iced::widget::rule::horizontal(2),
         cosmic::widget::row![
@@ -272,26 +242,39 @@ pub fn view_popup<'a>(
         .spacing(8)
         .align_y(cosmic::iced::Alignment::Center),
         build_city_picker(city_picker_open, city_search, all_cities),
-        field_row("Local DateTime:", format_in_tz(&c.utc_datetime, &info.tz_name)),
+        field_row("Local DateTime:", format_in_tz(&c.utc_datetime, &info.tz_name), 113.0),
         cosmic::iced::widget::rule::horizontal(2),
         cosmic::widget::row![
             cosmic::widget::checkbox(notifications_enabled)
-                .on_toggle(Msg::ToggleNotifications),
-            cosmic::widget::text("Notify me of New/Full Moon before:")
+                .on_toggle(Msg::ToggleNotifications).size(10),
+            cosmic::widget::text(" Remind me before New/Full Moon with:")
                 .size(10.0),
             cosmic::widget::dropdown(
                 day_options,
                 Some((notify_days as usize).min(14)),
                 Msg::SelectNotifyDays,
-            ),
+            ).text_size(10.0),
             cosmic::widget::dropdown(
                 hour_options,
                 Some((notify_hours as usize).min(23)),
                 Msg::SelectNotifyHours,
-            ),
+            ).text_size(10.0),
+        ].align_y(cosmic::iced::Alignment::Center),
+        cosmic::iced::widget::rule::horizontal(2),        
+        cosmic::widget::row![
+            cosmic::iced::widget::Space::new()
+                .width(cosmic::iced::Length::Fill),
+            cosmic::widget::divider::vertical::default(),
+            cosmic::widget::button::link("homepage")
+                .on_press(Msg::OpenUrl(APP_HOMEPAGE.to_string()))
+                .padding(0)
+                .font_size(8),
+            cosmic::widget::divider::vertical::default(),
+            cosmic::widget::text(APP_VERSION)
+                .size(8.0),
         ]
-        .spacing(6)
-        .align_y(cosmic::iced::Alignment::Center),
+        .spacing(8)
+        .align_y(cosmic::iced::Alignment::Center)
     ]
     .spacing(2)
     .padding(8);

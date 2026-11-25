@@ -2,11 +2,11 @@ use cosmic::app::Core;
 use cosmic::iced::Limits;
 use cosmic::iced::window::Id;
 use cosmic::{Action, Element, Task};
-use crate::moon_data::MoonInfo;
-use crate::view::{get_moon_phase_image, view_panel, view_popup};
+use crate::astronomy::MoonInfo;
+use crate::location_utils::{CityEntry, all_cities};
+use crate::view::{view_panel, view_popup};
+use crate::utils::{get_moon_phase_image, APP_ID};
 use cosmic::surface::action::{app_popup, destroy_popup};
-
-pub const APP_ID: &str = "io.github.gavril_amarant.cosmic-applet-moon";
 
 #[derive(Debug, Clone)]
 pub enum Msg {
@@ -20,6 +20,7 @@ pub enum Msg {
     ToggleNotifications(bool),
     SelectNotifyDays(usize),
     SelectNotifyHours(usize),
+    OpenUrl(String),
 }
 
 pub struct MoonApplet {
@@ -31,7 +32,7 @@ pub struct MoonApplet {
     pub config: crate::config::MoonConfig,
     pub city_picker_open: bool,
     pub city_search: String,
-    pub all_cities: Vec<crate::moon_horizon::CityEntry>,    
+    pub all_cities: Vec<CityEntry>,    
 }
 
 
@@ -51,7 +52,7 @@ impl cosmic::Application for MoonApplet {
         let (config_handler, config) = crate::config::MoonConfig::load(APP_ID);
         let info = MoonInfo::compute(config.manual_tz.as_deref());
         let icon = get_moon_phase_image(info.day);
-        let all_cities = crate::moon_horizon::all_cities();
+        let all_cities = all_cities();
         
 
         let mut app = Self {
@@ -180,6 +181,10 @@ impl cosmic::Application for MoonApplet {
                     self.popup = None;
                 }
             }
+
+            Msg::OpenUrl(url) => {
+                let _ = open::that(&url);
+            }
         }
         Task::none()
     }
@@ -219,18 +224,18 @@ impl MoonApplet {
                 );
 
                 if self.config.last_notified_event.as_deref() != Some(&event_key) {
-                    let local_time = crate::moon_data::format_in_tz(utc_str, &self.info.tz_name);
+                    let local_time = crate::utils::format_in_tz(utc_str, &self.info.tz_name);
                     let summary = format!("Upcoming {}", label);
                     let body = format!(
                         "{} occurs in {} ({}).",
                         label,
-                        crate::moon_data::format_age(target_jd - now_jd),
+                        crate::utils::format_age(target_jd - now_jd),
                         local_time
                     );
 
                     self.config.set_notified(self.config_handler.as_ref(), event_key);
 
-                    let icon_bytes = crate::view::get_moon_phase_bytes(self.info.day);
+                    let icon_bytes = crate::utils::get_moon_phase_bytes(self.info.day);
 
                     return Task::future(async move {
                         send_desktop_notification(summary, body, icon_bytes).await;

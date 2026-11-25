@@ -1,5 +1,5 @@
-use crate::moon_horizon::{compute_moon_rise_set, get_observer_coords, MoonHorizonTimes};
-use chrono::{DateTime, Local, TimeZone, Utc};
+use crate::{location_utils::{get_observer_coords, resolve_tz_name}, moon_horizon::{MoonHorizonTimes, compute_moon_rise_set}, utils::format_age};
+use chrono::{DateTime, TimeZone, Utc};
 
 // ── Data structures (exact same fields as before) ────────────
 
@@ -61,6 +61,7 @@ pub struct MoonInfo {
     pub growing: bool,
     pub day: usize,
     pub next_state: &'static str,
+    pub next_state_tooltip: &'static str,
     pub time_remaining: String,
     pub moon_horizon: MoonHorizonTimes,
     pub earths_between_moon: f64,
@@ -68,47 +69,6 @@ pub struct MoonInfo {
     pub earths_between_sun: f64,
     pub suns_between_sun: f64, 
     pub tz_name: String,   
-}
-
-// ── Formatting helpers ───────────────────────────────────────
-
-pub fn format_age(days: f64) -> String {
-    let total_minutes = (days * 24.0 * 60.0).round() as i64;
-    let d = total_minutes / (24 * 60);
-    let h = (total_minutes / 60) % 24;
-    let m = total_minutes % 60;
-    if d > 0 {
-        format!("{}d {}h {}m", d, h, m)
-    } else if h > 0 {
-        format!("{}h {}m", h, m)
-    } else if m > 0 {
-        format!("{} minutes", m)
-    } else {
-        "now!".to_string()
-    }
-}
-pub fn format_in_tz(s: &str, tz_name: &str) -> String {
-    let tz: chrono_tz::Tz = tz_name.parse().unwrap_or(chrono_tz::Tz::UTC);
-    s.parse::<DateTime<Utc>>()
-        .map(|dt| {
-            let local = dt.with_timezone(&tz);
-            format!("{} ({})", local.format("%A, %d %b %Y, %H:%M:%S"), local.format("%Z"))
-        })
-        .unwrap_or_else(|_| s.to_string())
-}
-
-#[allow(dead_code)]
-pub fn format_local(s: &str) -> String {
-    s.parse::<DateTime<Utc>>()
-        .map(|dt| {
-            let local: DateTime<Local> = dt.with_timezone(&Local);
-            format!(
-                "{} ({})",
-                local.format("%A, %d %b %Y, %H:%M:%S"),
-                local.format("%Z")
-            )
-        })
-        .unwrap_or_else(|_| s.to_string())
 }
 
 // ── Computation ──────────────────────────────────────────────
@@ -121,7 +81,7 @@ impl MoonInfo {
 
 
         let now = Utc::now();
-        let tz_name = crate::moon_horizon::resolve_tz_name(manual_tz);
+        let tz_name = resolve_tz_name(manual_tz);
         let (lat_deg, lon_deg) = get_observer_coords(manual_tz);
 
         let calendar_data = compute_calendar(now);
@@ -135,7 +95,11 @@ impl MoonInfo {
         } else {
             "New Moon in:"
         };
-
+        let next_state_tooltip = if growing {
+            "Time left until 100% illumination"
+        } else {
+            "Time left until 0% illumination"
+        };
         let current_jd = calendar_data.julian_date;
         let target_jd = if growing {
             calendar_data.full_moon
@@ -162,6 +126,7 @@ impl MoonInfo {
             growing,
             day,
             next_state,
+            next_state_tooltip,
             time_remaining: format_age(target_jd - current_jd),
             moon_horizon,
             earths_between_moon,

@@ -13,6 +13,7 @@ chrono-tz = "0.10"
 zbus = { version = "6.2", default-features = false, features = ["tokio"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 ron = "0.12.3"
+open = "5.4.5"
 
 
 [package.metadata.deb]

@@ -4,7 +4,7 @@
     {
       "type": "shell",
       "label": "Deploy Applet to COSMIC Panel",
-      "command": "cargo deb && sudo apt install --reinstall ./target/debian/cosmic-applet-moon_*.deb && (pkill -x cosmic-applet-moon || true) && (pkill -x cosmic-panel || true) && sleep 0.5",
+      "command": "cargo deb && sudo apt install --reinstall ./target/debian/cosmic-applet-moon_*.deb && (pkill -x cosmic-applet-moon || true) && (pkill -x cosmic-panel || true) && sleep 0.5 && cosmic-panel",
       "options": {
         "env": {
           "PATH": "~/.cargo/bin:${env:PATH}"
@@ -18,21 +18,6 @@
       "presentation": {
         "reveal": "always",
         "panel": "shared",
-        "clear": true
-      }
-    },
-    {
-      "type": "shell",
-      "label": "Test Applet Output Natively",
-      "command": "cargo test -- --nocapture test_output",
-      "options": {
-        "env": {
-          "PATH": "~/.cargo/bin:${env:PATH}"
-        }
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "new",
         "clear": true
       }
     },

@@ -63,10 +63,10 @@ impl MoonConfig {
 
     pub fn set_notified(&mut self, _handler: Option<&Config>, event_key: String) {
         self.last_notified_event = Some(event_key);
-        self.persist(crate::moon_applet::APP_ID);
+        self.persist(crate::utils::APP_ID);
     }
 
     pub fn save(&mut self, _handler: Option<&Config>) {
-        self.persist(crate::moon_applet::APP_ID);
+        self.persist(crate::utils::APP_ID);
     }
 }
